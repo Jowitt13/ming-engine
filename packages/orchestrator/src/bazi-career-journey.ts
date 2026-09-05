@@ -96,14 +96,24 @@ export function projectBaziCareerJourney(
   // Unknown birth time makes every chart-derived bazi claim hour-affected
   // (the hour pillar is absent from pillars, roots, and officer enumeration),
   // so the whole class is omitted through the recorded degradation instead of
-  // being delivered as if complete.
-  const sensitivities = publicResult.inputReliability.birthTimeKnown ? [] : ['time-sensitive'];
+  // being delivered as if complete. Rule-derived claims additionally carry the
+  // ruleset-variant sensitivity: the admitted `bazi-rules-ziping` line is one
+  // rule profile, so an unresolved rule-profile choice blocks exactly those
+  // claims instead of silently standing in a default.
+  const timeSensitivities = publicResult.inputReliability.birthTimeKnown
+    ? []
+    : (['time-sensitive'] as const);
   const responseView = buildClarifiedResponseView({
     planningInput: input.planningInput,
     approvedClaims: baziClaims,
     claimEligibility: baziClaims.map((claim) => ({
       claimId: claim.claimId,
-      sensitivities: [...sensitivities],
+      sensitivities: [
+        ...timeSensitivities,
+        ...(claim.mechanismRefs.some((ref) => ref.startsWith('bazi-rule/'))
+          ? (['ruleset-variant-sensitive'] as const)
+          : []),
+      ],
     })),
   });
   return { clarificationPlan, responseView };

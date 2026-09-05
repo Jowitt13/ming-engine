@@ -6,8 +6,13 @@ import { canonicalJson, parseBirthInput, type BirthInput } from '@loom/contracts
 import { describe, expect, it } from 'vitest';
 import { ClarificationPlanningInput } from '../../contracts/src/clarification-plan.ts';
 import { planClarificationMateriality } from '../../interpret/src/clarification-materiality.ts';
+import {
+  approveAnswerClaimCandidates,
+  projectAnswerClaimCandidates,
+} from '../../interpret/src/answer-claim-chain.ts';
 import { ResponseViewPlanningError } from '../../interpret/src/response-view.ts';
 import { BaziCareerJourneyError, projectBaziCareerJourney } from '../src/bazi-career-journey.ts';
+import { verifyClarifiedResponseView } from '../src/clarified-response.ts';
 import { runAnswerPlan } from '../src/interpret.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
@@ -49,6 +54,8 @@ function planningInput(
     systemScope: 'bazi' | 'western' | null;
     birthTimeReliability: 'confirmed' | 'unavailable' | 'unresolved';
     timeSensitiveClaims: boolean;
+    rulesetVariantSensitiveClaims: boolean;
+    rulesetVariant: 'confirmed' | 'unavailable' | 'unresolved';
   }> = {},
 ) {
   return ClarificationPlanningInput.parse({
@@ -206,6 +213,130 @@ describe('IQ-4A internal bazi career journey', () => {
       );
       expect(degradedPlan.status).toBe('degraded');
       expect(degradedPlan.degradationCodes).toEqual(['omit-time-sensitive-claims']);
+    },
+  );
+
+  it(
+    'removes the rule-derived claim class when the rule profile is unavailable and refuses delivery',
+    { timeout: 30_000 },
+    () => {
+      let caught: unknown;
+      try {
+        projectBaziCareerJourney(
+          journeyInput(syntheticInput, {
+            rulesetVariantSensitiveClaims: true,
+            rulesetVariant: 'unavailable',
+          }),
+          { now: FIXED },
+        );
+      } catch (error) {
+        caught = error;
+      }
+      expect(caught).toBeInstanceOf(ResponseViewPlanningError);
+      expect((caught as ResponseViewPlanningError).code).toBe('NO_ELIGIBLE_APPROVED_CLAIMS');
+      // Every bazi career claim cites a bazi-rule mechanism, so the recorded
+      // degradation removes the whole class instead of standing in a default.
+      const degradedPlan = planClarificationMateriality(
+        planningInput({ rulesetVariantSensitiveClaims: true, rulesetVariant: 'unavailable' }),
+      );
+      expect(degradedPlan.status).toBe('degraded');
+      expect(degradedPlan.clarificationNoteCodes).toEqual(['ruleset-variant-unavailable']);
+      expect(degradedPlan.degradationCodes).toEqual(['omit-ruleset-variant-sensitive-claims']);
+    },
+  );
+
+  it(
+    'delivers the rule-derived claims once the rule profile is explicitly confirmed',
+    { timeout: 30_000 },
+    () => {
+      const { clarificationPlan, responseView } = projectBaziCareerJourney(
+        journeyInput(syntheticInput, {
+          rulesetVariantSensitiveClaims: true,
+          rulesetVariant: 'confirmed',
+        }),
+        { now: FIXED },
+      );
+      expect(clarificationPlan.status).toBe('ready');
+      expect(responseView.clarificationStatus).toBe('ready');
+      expect(responseView.approvedClaimIds).toEqual([
+        'approved-claim:fact-7',
+        'approved-claim:fact-96',
+      ]);
+    },
+  );
+
+  it('blocks the whole claim path when the bazi source namespace slice is absent', () => {
+    const { publicResult, answerPlan } = runAnswerPlan(syntheticInput, {
+      now: FIXED,
+      topic: 'career',
+    });
+    const stripped = {
+      ...publicResult,
+      rulesets: publicResult.rulesets.filter((ruleset) => !/^bazi(?:-|$)/.test(ruleset.id)),
+    };
+    const projection = projectAnswerClaimCandidates({ publicResult: stripped, answerPlan });
+    expect(projection.candidates.some((candidate) => candidate.system === 'bazi')).toBe(false);
+    expect(projection.issues.some((issue) => issue.code === 'CANDIDATE_CONTENT')).toBe(true);
+    const approval = approveAnswerClaimCandidates(
+      { publicResult: stripped, answerPlan },
+      projection.candidates,
+    );
+    expect(approval.approvedClaims).toEqual([]);
+    expect(approval.issues.some((issue) => issue.code === 'APPROVAL_BLOCKED')).toBe(true);
+  });
+
+  it('blocks competing or rewritten claim variants instead of picking or merging them', () => {
+    const { publicResult, answerPlan } = runAnswerPlan(syntheticInput, {
+      now: FIXED,
+      topic: 'career',
+    });
+    const context = { publicResult, answerPlan };
+    const candidates = [...projectAnswerClaimCandidates(context).candidates];
+    const rewritten = { ...candidates[0]!, claim: `${candidates[0]!.claim}（另一种说法）` };
+    const approval = approveAnswerClaimCandidates(context, [rewritten, ...candidates.slice(1)]);
+    expect(approval.approvedClaims).toEqual([]);
+    expect(approval.issues.some((issue) => issue.code === 'APPROVAL_BLOCKED')).toBe(true);
+  });
+
+  it(
+    'rejects a view that keeps only a winning subset of the approved claims',
+    { timeout: 30_000 },
+    () => {
+      const { responseView } = projectBaziCareerJourney(journeyInput(syntheticInput), {
+        now: FIXED,
+      });
+      // The IQ-3D surface input for the same bounded journey inputs, rebuilt
+      // through the same public pieces the journey itself composes.
+      const { publicResult, answerPlan } = runAnswerPlan(syntheticInput, {
+        now: FIXED,
+        topic: 'career',
+      });
+      const context = { publicResult, answerPlan };
+      const approval = approveAnswerClaimCandidates(
+        context,
+        projectAnswerClaimCandidates(context).candidates,
+      );
+      const baziClaims = approval.approvedClaims.filter((claim) => claim.system === 'bazi');
+      const surfaceInput = {
+        planningInput: planningInput(),
+        approvedClaims: baziClaims,
+        claimEligibility: baziClaims.map((claim) => ({
+          claimId: claim.claimId,
+          sensitivities: [],
+        })),
+      };
+      const subset = {
+        ...responseView,
+        approvedClaimIds: responseView.approvedClaimIds.slice(0, 1),
+        materialCaveatIds: responseView.materialCaveatIds.filter((caveatId) =>
+          caveatId.includes('fact-7'),
+        ),
+      };
+      expect(subset.approvedClaimIds.length).toBeGreaterThan(0);
+      expect(verifyClarifiedResponseView(subset, surfaceInput)).toEqual({
+        ok: false,
+        issues: [{ code: 'VIEW_LINKAGE', path: '$.responseView' }],
+      });
     },
   );
 
