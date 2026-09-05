@@ -18,3 +18,6 @@ export * from './bazi-career-journey.ts';
 // IQ-4C internal verifier binding synthetic narrative traces to the journey evidence.
 // Deliberately not re-exported by engine-entry: it wires no CLI verb and no runtime path.
 export * from './bazi-career-narrative.ts';
+// IQ-4D internal answer verification binding the visible career answer to the journey.
+// Deliberately not re-exported by engine-entry: it wires no CLI verb and no runtime path.
+export * from './bazi-career-answer.ts';
