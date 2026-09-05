@@ -55,6 +55,23 @@ export function projectBaziCareerJourney(
   clarificationPlan: ReturnType<typeof planClarificationMateriality>;
   responseView: ReturnType<typeof buildClarifiedResponseView>;
 } {
+  const { clarificationPlan, responseView } = runBaziCareerJourney(rawInput, options);
+  return { clarificationPlan, responseView };
+}
+
+/**
+ * Internal IQ-4C runner: the full journey including the approved
+ * single-system claims, so the narrative verifier can bind traces to exactly
+ * the claims the view delivers. Same fail-closed behavior as the projection.
+ */
+export function runBaziCareerJourney(
+  rawInput: unknown,
+  options: { now: number },
+): {
+  clarificationPlan: ReturnType<typeof planClarificationMateriality>;
+  responseView: ReturnType<typeof buildClarifiedResponseView>;
+  baziClaims: ReturnType<typeof approveAnswerClaimCandidates>['approvedClaims'];
+} {
   const input = BaziCareerJourneyInput.parse(rawInput);
   const birthInput = parseBirthInput(input.birthInput);
   if (input.planningInput.topic !== 'career' || input.planningInput.systemScope !== 'bazi') {
@@ -116,5 +133,5 @@ export function projectBaziCareerJourney(
       ],
     })),
   });
-  return { clarificationPlan, responseView };
+  return { clarificationPlan, responseView, baziClaims };
 }
