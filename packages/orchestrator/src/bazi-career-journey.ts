@@ -2,6 +2,7 @@ import { parseBirthInput } from '@loom/contracts';
 import { ClarificationPlanningInput } from '../../contracts/src/clarification-plan.ts';
 import { z } from 'zod';
 import { planClarificationMateriality } from '../../interpret/src/clarification-materiality.ts';
+import { buildAnswerPlan } from '../../interpret/src/answer-plan.ts';
 import {
   approveAnswerClaimCandidates,
   projectAnswerClaimCandidates,
@@ -71,6 +72,7 @@ export function runBaziCareerJourney(
   clarificationPlan: ReturnType<typeof planClarificationMateriality>;
   responseView: ReturnType<typeof buildClarifiedResponseView>;
   baziClaims: ReturnType<typeof approveAnswerClaimCandidates>['approvedClaims'];
+  answerPlan: ReturnType<typeof buildAnswerPlan>;
 } {
   const input = BaziCareerJourneyInput.parse(rawInput);
   const birthInput = parseBirthInput(input.birthInput);
@@ -133,5 +135,5 @@ export function runBaziCareerJourney(
       ],
     })),
   });
-  return { clarificationPlan, responseView, baziClaims };
+  return { clarificationPlan, responseView, baziClaims, answerPlan };
 }
