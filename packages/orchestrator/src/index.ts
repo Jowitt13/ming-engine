@@ -15,3 +15,6 @@ export * from './clarified-response.ts';
 // IQ-4A internal single-system (bazi) career journey over the same frozen records.
 // Deliberately not re-exported by engine-entry: it wires no CLI verb and no runtime path.
 export * from './bazi-career-journey.ts';
+// IQ-4C internal verifier binding synthetic narrative traces to the journey evidence.
+// Deliberately not re-exported by engine-entry: it wires no CLI verb and no runtime path.
+export * from './bazi-career-narrative.ts';
