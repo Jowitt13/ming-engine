@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { canonicalJson } from '../../packages/contracts/src/ids.ts';
+import { canonicalJson, canonicalJsonPretty } from '../../packages/contracts/src/ids.ts';
 import { HOSTS } from '../lib/host-config.ts';
 import { runBaziCareerJourney } from '../../packages/orchestrator/src/bazi-career-journey.ts';
 import { verifyBaziCareerAnswer } from '../../packages/orchestrator/src/bazi-career-answer.ts';
@@ -10,17 +10,19 @@ import { verifyBaziCareerNarrative } from '../../packages/orchestrator/src/bazi-
 import { NarrativeTrace } from '../../packages/contracts/src/answer-claim.ts';
 
 /**
- * IQ-4E acceptance-packet verifier. The shipped packet is a synthetic,
- * evidence-linked PREPARATION artifact: every host record starts as
- * NOT_EXECUTED and the owner review starts as NOT_EXECUTED with a null
- * record. The verifier fail-closes on anything that claims completion
- * without complete, well-formed evidence — pending is never pass, and no
- * status outside the recorded vocabulary is accepted.
+ * IQ-4G acceptance-packet verifier (packet v2). Host acceptance targets the
+ * IQ-4F explicit bazi-career runtime entry only: an EXECUTED host record must
+ * bind the source commit, the installed candidate ZIP's sha256, the packet
+ * input digest, and the sha256 of the captured bazi-career stdout — and that
+ * stdout digest must equal the digest the verifier recomputes from the
+ * journey itself. Stale generic multi-system demo output, fabricated output,
+ * and any other input therefore fail closed. Pending is never pass, and the
+ * owner review keeps its own independent pending/approved boundary over the
+ * trace-bound answer artifact.
  *
- * Anti-forgery boundary (deliberate): this static verifier proves
- * completeness and vocabulary, not real-world execution. Authenticity of an
- * EXECUTED record rests on the owner's own git-reviewed commit; nothing here
- * auto-approves anything.
+ * Anti-forgery boundary (deliberate): static completeness and binding only.
+ * Authenticity of an EXECUTED record rests on the owner's git-reviewed
+ * commit; nothing here auto-approves anything.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -70,6 +72,7 @@ const BOUNDARY_FINDING_IDS = new Set([
 
 const SHA256_PATTERN = /^sha256:[0-9a-f]{64}$/;
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const COMMIT_PATTERN = /^[0-9a-f]{40}$/;
 const REVIEWER_ID_PATTERN = /^reviewer:anon:[a-f0-9]{16}$/;
 const REVIEW_ID_PATTERN = /^review:synthetic:[a-z0-9][a-z0-9._-]*$/;
 const CASE_ID_PATTERN = /^case:synthetic:career:[a-z0-9][a-z0-9._-]*$/;
@@ -91,14 +94,14 @@ function checkHostRecord(
   hostId: string,
   record: unknown,
   hostConfig: (typeof HOSTS)[number],
+  runtimeEntry: Packet,
+  expectedStdoutDigest: string,
+  expectedInputDigest: string,
 ): string | null {
   if (!isRecord(record)) return `record for ${hostId} is not an object`;
   if (record.hostId !== hostId) return `record hostId mismatch`;
   if (record.engineSelfCheck !== hostConfig.engineSelfCheck) {
     return `engineSelfCheck does not match the host config`;
-  }
-  if (record.userDemoPrompt !== hostConfig.userDemoPrompt) {
-    return `userDemoPrompt does not match the host config`;
   }
   const status = record.status;
   if (status === 'NOT_EXECUTED') return null;
@@ -106,8 +109,30 @@ function checkHostRecord(
     const result = record.result;
     if (!isRecord(result)) return `EXECUTED record has no result object`;
     if (typeof result.exitCode !== 'number') return `EXECUTED record lacks a numeric exitCode`;
+    if (result.exitCode !== 0) return `EXECUTED record records a failed run`;
     if (typeof result.outputDigest !== 'string' || !SHA256_PATTERN.test(result.outputDigest)) {
       return `EXECUTED record lacks a sha256 outputDigest`;
+    }
+    // Master binding: the captured bazi-career stdout must hash exactly to
+    // what the verifier recomputes from the journey. Old generic demo output,
+    // fabricated text, and different inputs can never match.
+    if (result.outputDigest !== expectedStdoutDigest) {
+      return `outputDigest does not match the recomputed bazi-career stdout`;
+    }
+    if (typeof result.sourceCommit !== 'string' || !COMMIT_PATTERN.test(result.sourceCommit)) {
+      return `EXECUTED record lacks a 40-hex sourceCommit`;
+    }
+    if (result.sourceCommit !== runtimeEntry.sourceCommit) {
+      return `sourceCommit does not match the packet's runtime entry`;
+    }
+    if (
+      typeof result.candidateSha256 !== 'string' ||
+      !SHA256_PATTERN.test(result.candidateSha256)
+    ) {
+      return `EXECUTED record lacks the installed candidate ZIP sha256`;
+    }
+    if (typeof result.inputDigest !== 'string' || result.inputDigest !== expectedInputDigest) {
+      return `inputDigest does not match the packet's synthetic input`;
     }
     if (typeof result.executedAtISO !== 'string' || !ISO_DATE_PATTERN.test(result.executedAtISO)) {
       return `EXECUTED record lacks an executedAtISO date`;
@@ -233,21 +258,58 @@ export function verifyIq4AcceptancePacket(packet: unknown): {
     add('packet is a JSON object', false);
     return { ok: false, checks };
   }
-  add('packet id is iq4-acceptance-packet/v1', packet.packetId === 'iq4-acceptance-packet/v1');
+  add('packet id is iq4-acceptance-packet/v2', packet.packetId === 'iq4-acceptance-packet/v2');
+
+  // IQ-4F explicit runtime entry binding: the acceptance target is the
+  // bazi-career command at a pinned source commit over the packet input.
+  const runtimeEntry = packet.runtimeEntry;
+  let runtimeEntryOk = false;
+  let expectedInputDigest = '';
+  if (isRecord(runtimeEntry)) {
+    runtimeEntryOk =
+      typeof runtimeEntry.sourceCommit === 'string' &&
+      COMMIT_PATTERN.test(runtimeEntry.sourceCommit) &&
+      typeof runtimeEntry.command === 'string' &&
+      runtimeEntry.command.includes('bazi-career') &&
+      runtimeEntry.command.includes('--system bazi');
+    add('runtime entry pins the explicit bazi-career command and source commit', runtimeEntryOk);
+    if (isRecord(packet.journeyInput)) {
+      expectedInputDigest = `sha256:${createHash('sha256')
+        .update(canonicalJson(packet.journeyInput.birthInput))
+        .digest('hex')}`;
+      add(
+        'runtime entry input digest matches the packet synthetic input',
+        runtimeEntry.inputDigest === expectedInputDigest,
+      );
+    } else {
+      add('runtime entry input digest matches the packet synthetic input', false);
+    }
+  } else {
+    add('runtime entry pins the explicit bazi-career command and source commit', false);
+  }
 
   // Full-chain link: recompute the journey and verify the embedded answer and
-  // traces against the recomputed evidence.
+  // traces against the recomputed evidence; also derive the expected
+  // bazi-career stdout digest that EXECUTED host records must bind.
   let answerVerified = false;
   let narrativeVerified = false;
   let claimsMatch = false;
+  let journeyRecomputed = false;
+  let expectedStdoutDigest = '';
   try {
     const journey = runBaziCareerJourney(packet.journeyInput, { now: packet.fixedNow as number });
+    journeyRecomputed = true;
     const viewClaimIds = journey.responseView.approvedClaimIds;
     const expectedClaimIds = packet.expectedViewClaimIds as unknown[];
     claimsMatch =
       Array.isArray(expectedClaimIds) &&
       viewClaimIds.length === expectedClaimIds.length &&
       viewClaimIds.every((id, index) => expectedClaimIds[index] === id);
+    expectedStdoutDigest = `sha256:${createHash('sha256')
+      .update(
+        `${canonicalJsonPretty({ ok: true, clarificationPlan: journey.clarificationPlan, responseView: journey.responseView })}\n`,
+      )
+      .digest('hex')}`;
     narrativeVerified = verifyBaziCareerNarrative(
       packet.traces as readonly unknown[],
       packet.journeyInput,
@@ -263,8 +325,10 @@ export function verifyIq4AcceptancePacket(packet: unknown): {
     claimsMatch = false;
     narrativeVerified = false;
     answerVerified = false;
+    journeyRecomputed = false;
   }
   add('embedded journey recomputes to the expected single-system view', claimsMatch);
+  add('expected bazi-career stdout digest derived from the journey', journeyRecomputed);
   add('embedded traces link every claim and caveat of the journey', narrativeVerified);
   add('embedded answer draft passes journey-level answer verification', answerVerified);
 
@@ -293,7 +357,14 @@ export function verifyIq4AcceptancePacket(packet: unknown): {
         configuredIds.every((id, index) => recordIds[index] === id),
     );
     for (const [index, host] of HOSTS.entries()) {
-      const detail = checkHostRecord(host.id, hostAcceptance.records[index], host);
+      const detail = checkHostRecord(
+        host.id,
+        hostAcceptance.records[index],
+        host,
+        isRecord(runtimeEntry) ? runtimeEntry : {},
+        expectedStdoutDigest,
+        expectedInputDigest,
+      );
       add(
         `host record ${host.id} is pending or fully evidenced`,
         detail === null,
