@@ -6,7 +6,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { canonicalJson, canonicalJsonPretty } from '../packages/contracts/src/ids.ts';
 import { describe, expect, it } from 'vitest';
-import { HOSTS } from './lib/host-config.ts';
 import { runBaziCareerJourney } from '../packages/orchestrator/src/bazi-career-journey.ts';
 import {
   loadIq4AcceptancePacket,
@@ -63,87 +62,172 @@ function executedResult(overrides: Record<string, unknown> = {}): Record<string,
   };
 }
 
-describe('IQ-4G acceptance packet (bazi-career runtime binding)', () => {
-  it('ships a fully linked synthetic packet whose verification is green', () => {
-    const result = verifyIq4AcceptancePacket(loadIq4AcceptancePacket());
-    expect(result.ok, JSON.stringify(result.checks.filter((check) => !check.ok))).toBe(true);
-  });
+function allHostsExecuted(packet: Record<string, unknown>): void {
+  const records = (packet.hostAcceptance as Record<string, unknown>).records as Array<
+    Record<string, unknown>
+  >;
+  for (const record of records) {
+    record.status = 'EXECUTED';
+    record.result = executedResult();
+  }
+  (packet.hostAcceptance as Record<string, unknown>).status = 'EXECUTED';
+}
 
-  it('ships every host record and the owner review as explicitly pending', () => {
+// The retired IQ-4G artifacts: text claims bound to unadmitted rule content
+// (bazi-rule/pattern = 格局; bazi-rule/industry/wu-xing = 喜用神行业匹配).
+const RETIRED_TRACES = [
+  {
+    contractVersion: 'narrative-trace/v1',
+    traceId: 'narrative-trace:paragraph-1',
+    paragraphId: 'paragraph-1',
+    topic: 'career',
+    approvedClaimIds: ['approved-claim:fact-7'],
+    factRefs: ['fact-7'],
+    mechanismRefs: ['bazi.pillars.*.tenGod', 'bazi-rule/pattern'],
+    constraintRefs: [{ kind: 'caveat', index: 0 }],
+    invalidationCauses: [
+      'input-chart',
+      'settings',
+      'engine-provider',
+      'ruleset',
+      'source-profile',
+      'topic-lens',
+      'language-narrator',
+    ],
+    visibleText: '（已退役的 IQ-4G 合成叙述示例，依赖未准入的格局规则内容。）',
+    transient: true,
+    regenerable: true,
+  },
+  {
+    contractVersion: 'narrative-trace/v1',
+    traceId: 'narrative-trace:paragraph-2',
+    paragraphId: 'paragraph-2',
+    topic: 'career',
+    approvedClaimIds: ['approved-claim:fact-96'],
+    factRefs: ['fact-96'],
+    mechanismRefs: ['bazi-rule/industry/wu-xing'],
+    constraintRefs: [{ kind: 'caveat', index: 3 }],
+    invalidationCauses: [
+      'input-chart',
+      'settings',
+      'engine-provider',
+      'ruleset',
+      'source-profile',
+      'topic-lens',
+      'language-narrator',
+    ],
+    visibleText: '（已退役的 IQ-4G 合成叙述示例，依赖未准入的喜用神行业匹配内容。）',
+    transient: true,
+    regenerable: true,
+  },
+];
+
+describe('IQ-4H acceptance packet (strict source gate)', () => {
+  it('ships a v3 packet with no reviewable artifacts and a green verification', () => {
     const packet = loadIq4AcceptancePacket() as Record<string, unknown>;
-    const hostAcceptance = packet.hostAcceptance as Record<string, unknown>;
-    expect(hostAcceptance.status).toBe('NOT_EXECUTED');
-    const records = hostAcceptance.records as Array<Record<string, unknown>>;
-    expect(records.map((record) => record.hostId)).toEqual(HOSTS.map((host) => host.id));
-    for (const record of records) {
-      expect(record.status).toBe('NOT_EXECUTED');
-    }
-    const ownerReview = packet.ownerReview as Record<string, unknown>;
-    expect(ownerReview.status).toBe('NOT_EXECUTED');
-    expect(ownerReview.reviewRecord).toBeNull();
-  });
-
-  it('pins the IQ-4F explicit bazi-career entry, source commit, and input digest', () => {
-    const packet = loadIq4AcceptancePacket() as Record<string, unknown>;
-    const runtimeEntry = packet.runtimeEntry as Record<string, unknown>;
-    expect(runtimeEntry.command).toContain('bazi-career');
-    expect(runtimeEntry.command).toContain('--system bazi');
-    expect(runtimeEntry.sourceCommit).toMatch(/^[0-9a-f]{40}$/);
-    expect(runtimeEntry.inputDigest).toBe(INPUT_DIGEST);
-  });
-
-  it('accepts a host record bound to the recomputed bazi-career stdout digest', () => {
-    const packet = tampered((packet) => {
-      const records = (packet.hostAcceptance as Record<string, unknown>).records as Array<
-        Record<string, unknown>
-      >;
-      records[0]!.status = 'EXECUTED';
-      records[0]!.result = executedResult();
-    });
+    expect(packet.packetId).toBe('iq4-acceptance-packet/v3');
+    expect(packet.traces).toBeUndefined();
+    expect(packet.answerDraft).toBeUndefined();
     const result = verifyIq4AcceptancePacket(packet);
     expect(result.ok, JSON.stringify(result.checks.filter((check) => !check.ok))).toBe(true);
   });
 
-  it('fail-closes when a host record claims a status outside the vocabulary', () => {
+  it('records the reviewed-answer-examples criterion as BLOCKED_SOURCE_ADMISSION', () => {
+    const packet = loadIq4AcceptancePacket() as Record<string, unknown>;
+    const iq4Exit = packet.iq4Exit as Record<string, unknown>;
+    expect(iq4Exit.status).toBe('BLOCKED_SOURCE_ADMISSION');
+    expect(iq4Exit.criterion).toBe('reviewed-answer-examples');
+    const ownerReview = packet.ownerReview as Record<string, unknown>;
+    expect(ownerReview.status).toBe('BLOCKED_SOURCE_ADMISSION');
+    expect(ownerReview.reviewRecord).toBeNull();
+  });
+
+  it('fail-closes when the retired unadmitted traces are injected', () => {
     const packet = tampered((packet) => {
-      const records = (packet.hostAcceptance as Record<string, unknown>).records as Array<
-        Record<string, unknown>
-      >;
-      records[0]!.status = 'PASS';
+      packet.traces = RETIRED_TRACES;
     });
     const result = verifyIq4AcceptancePacket(packet);
     expect(result.ok).toBe(false);
     expect(
       result.checks.some(
-        (check) =>
-          check.name.startsWith('host record') && check.detail?.includes('pending is never pass'),
+        (check) => check.name.includes('no reviewable career artifacts') && !check.ok,
       ),
     ).toBe(true);
   });
 
-  it('fail-closes on an EXECUTED host record without complete evidence', () => {
+  it('fail-closes when the retired answer draft or its digest is injected', () => {
+    const draftOnly = tampered((packet) => {
+      packet.answerDraft = { contractVersion: 'reading-draft/v2', topic: 'career' };
+    });
+    expect(verifyIq4AcceptancePacket(draftOnly).ok).toBe(false);
+
+    const digestOnly = tampered((packet) => {
+      packet.reviewedArtifactDigest = 'sha256:' + '0'.repeat(64);
+    });
+    expect(verifyIq4AcceptancePacket(digestOnly).ok).toBe(false);
+  });
+
+  it('fail-closes on any owner review status other than the source-blocked state', () => {
+    for (const status of ['REVIEWED', 'NOT_EXECUTED', 'PENDING']) {
+      const packet = tampered((packet) => {
+        (packet.ownerReview as Record<string, unknown>).status = status;
+      });
+      const result = verifyIq4AcceptancePacket(packet);
+      expect(result.ok, status).toBe(false);
+      expect(
+        result.checks.some(
+          (check) => check.name.includes('BLOCKED_SOURCE_ADMISSION governance state') && !check.ok,
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('fail-closes on an injected owner review record while blocked', () => {
     const packet = tampered((packet) => {
-      const records = (packet.hostAcceptance as Record<string, unknown>).records as Array<
-        Record<string, unknown>
-      >;
-      records[0]!.status = 'EXECUTED';
-      records[0]!.result = { exitCode: 0, outputDigest: null, executedAtISO: null, notes: '' };
+      (packet.ownerReview as Record<string, unknown>).reviewRecord = {
+        reviewId: 'review:synthetic:iq4-owner',
+        disposition: 'accept',
+      };
     });
     const result = verifyIq4AcceptancePacket(packet);
     expect(result.ok).toBe(false);
     expect(
-      result.checks.some((check) => check.name.startsWith('host record codex') && !check.ok),
+      result.checks.some((check) => check.name.includes('carries no review record') && !check.ok),
     ).toBe(true);
   });
 
-  it('fail-closes when the bound stdout digest does not match the recomputed journey', () => {
+  it('fail-closes on an injected "IQ-4 passed" exit state', () => {
+    const packet = tampered((packet) => {
+      (packet.iq4Exit as Record<string, unknown>).status = 'passed';
+    });
+    const result = verifyIq4AcceptancePacket(packet);
+    expect(result.ok).toBe(false);
+    expect(
+      result.checks.some((check) => check.name.includes('iq4 exit records') && !check.ok),
+    ).toBe(true);
+  });
+
+  it('keeps four-host EXECUTED as technical evidence that cannot lift the source block', () => {
+    const packet = tampered((packet) => allHostsExecuted(packet)) as Record<string, unknown>;
+    const result = verifyIq4AcceptancePacket(packet);
+    expect(result.ok, JSON.stringify(result.checks.filter((check) => !check.ok))).toBe(true);
+    const iq4Exit = (packet.iq4Exit as Record<string, unknown>).status;
+    expect(iq4Exit).toBe('BLOCKED_SOURCE_ADMISSION');
+
+    const passed = tampered((packet) => {
+      allHostsExecuted(packet);
+      (packet.iq4Exit as Record<string, unknown>).status = 'passed';
+    });
+    expect(verifyIq4AcceptancePacket(passed).ok).toBe(false);
+  });
+
+  it('fail-closes when a bound stdout digest does not match the recomputed journey', () => {
     const packet = tampered((packet) => {
       const records = (packet.hostAcceptance as Record<string, unknown>).records as Array<
         Record<string, unknown>
       >;
       records[0]!.status = 'EXECUTED';
       records[0]!.result = executedResult({
-        // Simulated stale generic multi-system demo output digest.
         outputDigest: `sha256:${createHash('sha256').update('generic career demo').digest('hex')}`,
       });
     });
@@ -175,119 +259,14 @@ describe('IQ-4G acceptance packet (bazi-career runtime binding)', () => {
       records[0]!.status = 'EXECUTED';
       records[0]!.result = executedResult({ inputDigest: 'sha256:' + 'b'.repeat(64) });
     });
-    const result = verifyIq4AcceptancePacket(wrongInput);
-    expect(result.ok).toBe(false);
-    expect(
-      result.checks.some(
-        (check) =>
-          check.name.startsWith('host record codex') &&
-          check.detail?.includes('inputDigest does not match'),
-      ),
-    ).toBe(true);
-  });
-
-  it('fail-closes on an EXECUTED record whose run failed', () => {
-    const packet = tampered((packet) => {
-      const records = (packet.hostAcceptance as Record<string, unknown>).records as Array<
-        Record<string, unknown>
-      >;
-      records[0]!.status = 'EXECUTED';
-      records[0]!.result = executedResult({ exitCode: 12 });
-    });
-    const result = verifyIq4AcceptancePacket(packet);
-    expect(result.ok).toBe(false);
-    expect(
-      result.checks.some(
-        (check) =>
-          check.name.startsWith('host record codex') && check.detail?.includes('failed run'),
-      ),
-    ).toBe(true);
-  });
-
-  it('fail-closes when the owner review claims REVIEWED without a record', () => {
-    const packet = tampered((packet) => {
-      (packet.ownerReview as Record<string, unknown>).status = 'REVIEWED';
-    });
-    const result = verifyIq4AcceptancePacket(packet);
-    expect(result.ok).toBe(false);
-    expect(
-      result.checks.some((check) => check.name.includes('owner review record') && !check.ok),
-    ).toBe(true);
-  });
-
-  it('fail-closes on a forged owner review bound to a different artifact digest', () => {
-    const packet = tampered((packet) => {
-      (packet.ownerReview as Record<string, unknown>).status = 'REVIEWED';
-      (packet.ownerReview as Record<string, unknown>).reviewRecord = {
-        reviewId: 'review:synthetic:iq4-owner',
-        reviewKind: 'independent',
-        caseId: 'case:synthetic:career:iq4-acceptance',
-        answerArtifactId: 'artifact:synthetic:iq4-career-answer',
-        reviewedArtifactDigest: 'sha256:' + '0'.repeat(64),
-        rubricId: 'rubric:answer-quality:career-v1',
-        reviewerId: 'reviewer:anon:0123456789abcdef',
-        reviewRound: 1,
-        judgments: [
-          'support-and-traceability',
-          'mechanism-to-implication',
-          'topic-specificity',
-          'condition-and-caveat-fidelity',
-          'cross-system-integrity',
-          'restraint-and-boundaries',
-          'presentation-cleanliness',
-          'usefulness-without-invention',
-        ].map((dimensionId) => ({ dimensionId, judgment: 'meets' })),
-        failureModeIds: [],
-        boundaryFindingIds: [
-          'claim-support-resolves',
-          'material-caveat-retained',
-          'cross-system-separation-preserved',
-          'deterministic-verdict-excluded',
-          'default-footer-excluded',
-        ],
-        disposition: 'accept',
-        sourceReviewIds: [],
-        exclusionPolicy: ['synthetic-only'],
-      };
-    });
-    const result = verifyIq4AcceptancePacket(packet);
-    expect(result.ok).toBe(false);
-    expect(
-      result.checks.some(
-        (check) =>
-          check.name.includes('owner review record') &&
-          check.detail?.includes('does not match the packet'),
-      ),
-    ).toBe(true);
-  });
-
-  it('fail-closes when the embedded journey evidence no longer matches the packet', () => {
-    const packet = tampered((packet) => {
-      packet.expectedViewClaimIds = ['approved-claim:fact-8'];
-    });
-    const result = verifyIq4AcceptancePacket(packet);
-    expect(result.ok).toBe(false);
-    expect(
-      result.checks.some((check) => check.name.includes('recomputes to the expected') && !check.ok),
-    ).toBe(true);
-  });
-
-  it('fail-closes on email-shaped strings anywhere in the packet', () => {
-    const packet = tampered((packet) => {
-      (packet.syntheticNotice as string) = '联系 someone@example.com 获取结果';
-    });
-    const result = verifyIq4AcceptancePacket(packet);
-    expect(result.ok).toBe(false);
-    expect(
-      result.checks.some((check) => check.name.includes('no email-shaped strings') && !check.ok),
-    ).toBe(true);
+    expect(verifyIq4AcceptancePacket(wrongInput).ok).toBe(false);
   });
 
   it(
     'binds the real CLI stdout digest to the recomputed expectation end to end',
     { timeout: 30_000 },
     () => {
-      const tempDir = mkdtempSync(join(tmpdir(), 'iq4g-packet-'));
+      const tempDir = mkdtempSync(join(tmpdir(), 'iq4h-packet-'));
       try {
         const inputFile = join(tempDir, 'bazi-career-input.json');
         writeFileSync(
@@ -320,6 +299,17 @@ describe('IQ-4G acceptance packet (bazi-career runtime binding)', () => {
       }
     },
   );
+
+  it('fail-closes on email-shaped strings anywhere in the packet', () => {
+    const packet = tampered((packet) => {
+      (packet.syntheticNotice as string) = '联系 someone@example.com 获取结果';
+    });
+    const result = verifyIq4AcceptancePacket(packet);
+    expect(result.ok).toBe(false);
+    expect(
+      result.checks.some((check) => check.name.includes('no email-shaped strings') && !check.ok),
+    ).toBe(true);
+  });
 
   it('keeps the packet and verifier outside every runtime entry point', () => {
     for (const relative of [
