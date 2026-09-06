@@ -145,6 +145,7 @@ node scripts/loom-chart.mjs compare   --input-file birth-input.json --profiles d
 node scripts/loom-chart.mjs horoscope --input-file birth-input.json --at 2026-05-20T14:00 --output-file horoscope.json
 node scripts/loom-chart.mjs interpret --input-file birth-input.json --at 2026-05-20T14:00 --output-file interpretation.json
 node scripts/loom-chart.mjs answer-plan --input-file birth-input.json --topic career --lens advice --output-file answer-plan.json
+node scripts/loom-chart.mjs bazi-career --input-file birth-input.json --system bazi --depth standard --output-file bazi-career.json
 node scripts/loom-chart.mjs synastry --input-file people.json --output-file synastry.json
 node scripts/loom-chart.mjs validate-answer --input-file validate-input.json --output-file validation-result.json
 node scripts/loom-chart.mjs lint-reading --input-file draft.md --channel topic
@@ -155,6 +156,12 @@ node scripts/loom-chart.mjs migrate --host qoder|workbuddy --source <extracted-n
 
 - `--systems` accepts `all` or a comma list of `western,bazi,ziwei,vedic`. `all` explicitly
   requests all four systems. Without the flag, raw `calculate` also defaults to all four systems.
+- `bazi-career` is the EXPLICIT single-system BaZi career entry (IQ-4F): `--system` is required
+  and must be `bazi`; `--depth` is required (`brief|standard|detailed`). It emits only the
+  versioned records (`clarification-plan/v1` + `response-view/v1`) — never claim prose — and
+  fails closed (`CLARIFICATION_REQUIRED`, exit 12) instead of answering when a material setting
+  is unresolved or the affected claim class is unavailable. The generic `answer-plan` verb keeps
+  its unspecified-system behavior unchanged.
 - `calculate` accepts `--now <iso|ms>` and `--request-id <id>` for reproducible output.
 - `version` reads the sibling `BUILD_MANIFEST.json` and reports the REAL installed version
   (engineVersion / releaseVersion / releaseTag / legacy / doubleNested) — never guessed, and not

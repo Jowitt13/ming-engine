@@ -2611,7 +2611,7 @@ var require_moment = __commonJS({
           hooks.updateOffset(mom, days2 || months2);
         }
       }
-      var add = createAdder(1, "add"), subtract = createAdder(-1, "subtract");
+      var add2 = createAdder(1, "add"), subtract = createAdder(-1, "subtract");
       function isString(input) {
         return typeof input === "string" || input instanceof String;
       }
@@ -3472,7 +3472,7 @@ var require_moment = __commonJS({
         return this._isUTC ? "Coordinated Universal Time" : "";
       }
       var proto = Moment.prototype;
-      proto.add = add;
+      proto.add = add2;
       proto.calendar = calendar$1;
       proto.clone = clone2;
       proto.diff = diff;
@@ -10431,11 +10431,11 @@ var require_dist = __commonJS({
       }
       getGanZhi() {
         let offset = LunarUtil.getJiaZiIndex(this._lunar.getTimeInGanZhi());
-        let add = this._index + 1;
+        let add2 = this._index + 1;
         if (this._daYun.getIndex() > 0) {
-          add += this._daYun.getStartAge() - 1;
+          add2 += this._daYun.getStartAge() - 1;
         }
-        offset += this._forward ? add : -add;
+        offset += this._forward ? add2 : -add2;
         const size = LunarUtil.JIA_ZI.length;
         while (offset < 0) {
           offset += size;
@@ -16512,12 +16512,12 @@ var require_dist = __commonJS({
         const xiaZhi = this.getJieQiSolar(I18n.getMessage("jq.xiaZhi"));
         const liQiu = this.getJieQiSolar(I18n.getMessage("jq.liQiu"));
         let startDay = Solar.fromYmd(xiaZhi.getYear(), xiaZhi.getMonth(), xiaZhi.getDay());
-        let add = 6 - xiaZhi.getLunar().getDayGanIndex();
-        if (add < 0) {
-          add += 10;
+        let add2 = 6 - xiaZhi.getLunar().getDayGanIndex();
+        if (add2 < 0) {
+          add2 += 10;
         }
-        add += 20;
-        startDay = startDay.next(add);
+        add2 += 20;
+        startDay = startDay.next(add2);
         if (currentDay.isBefore(startDay)) {
           return null;
         }
@@ -17030,9 +17030,9 @@ var require_dist = __commonJS({
           let solar = _Solar.fromYmdHms(this._year, this._month, this._day, this._hour, this._minute, this._second);
           if (days !== 0) {
             let rest = Math.abs(days);
-            const add = days < 1 ? -1 : 1;
+            const add2 = days < 1 ? -1 : 1;
             while (rest > 0) {
-              solar = solar.next(add);
+              solar = solar.next(add2);
               let work = true;
               const holiday = HolidayUtil.getHoliday(solar.getYear(), solar.getMonth(), solar.getDay());
               if (!holiday) {
@@ -39908,6 +39908,7 @@ var ERROR_CODES = {
   PROVIDER_FAILED: "PROVIDER_FAILED",
   RULESET_UNSUPPORTED: "RULESET_UNSUPPORTED",
   LUNAR_CONVERSION_UNAVAILABLE: "LUNAR_CONVERSION_UNAVAILABLE",
+  CLARIFICATION_REQUIRED: "CLARIFICATION_REQUIRED",
   INTERNAL_ERROR: "INTERNAL_ERROR"
 };
 var ERROR_EXIT_CODES = {
@@ -39921,7 +39922,8 @@ var ERROR_EXIT_CODES = {
   HOUSE_SYSTEM_UNAVAILABLE: 8,
   PROVIDER_FAILED: 9,
   RULESET_UNSUPPORTED: 10,
-  LUNAR_CONVERSION_UNAVAILABLE: 11
+  LUNAR_CONVERSION_UNAVAILABLE: 11,
+  CLARIFICATION_REQUIRED: 12
 };
 var EngineErrorEnvelope = external_exports.object({
   ok: external_exports.literal(false),
@@ -55220,13 +55222,13 @@ function tenGodsFinding(bazi) {
   const stems = [bazi.pillars.year, bazi.pillars.month, bazi.pillars.day, bazi.pillars.hour].filter(
     (p) => p !== null
   );
-  const unique = [...new Set(stems.map((p) => p.tenGod).filter((g) => g !== null))];
-  const detail = unique.map((g) => TEN_GOD_MEANINGS[g] ?? g).join(" ");
+  const unique3 = [...new Set(stems.map((p) => p.tenGod).filter((g) => g !== null))];
+  const detail = unique3.map((g) => TEN_GOD_MEANINGS[g] ?? g).join(" ");
   return {
     ruleId: "ten-gods/xiang-yi",
     topic: "ten-gods",
     matched: true,
-    claim: `\u547D\u5C40\u6240\u89C1\u5341\u795E\uFF1A${unique.join("\u3001") || "\uFF08\u4EC5\u65E5\u4E3B\uFF0C\u672A\u900F\u4ED6\u5E72\uFF09"}`,
+    claim: `\u547D\u5C40\u6240\u89C1\u5341\u795E\uFF1A${unique3.join("\u3001") || "\uFF08\u4EC5\u65E5\u4E3B\uFF0C\u672A\u900F\u4ED6\u5E72\uFF09"}`,
     source: { text: "\u6E0A\u6D77\u5B50\u5E73", chapter: "\u8BBA\u5341\u795E" },
     detail
   };
@@ -56400,8 +56402,8 @@ function nearBoundary(longitudeDeg, segments) {
   return segments.some((segment) => distanceToBoundary(longitudeDeg, segment) <= 1 / 60);
 }
 function joinCaveats(...items) {
-  const unique = [...new Set(items.filter((item) => item !== void 0))];
-  return unique.length === 0 ? void 0 : unique.join(" ");
+  const unique3 = [...new Set(items.filter((item) => item !== void 0))];
+  return unique3.length === 0 ? void 0 : unique3.join(" ");
 }
 function timeCaveat(timeAccuracy, kind) {
   if (timeAccuracy !== "approximate") return void 0;
@@ -56910,14 +56912,14 @@ function healthFacts(bundle) {
   const b = bundle.bazi;
   if (b) {
     const tally = /* @__PURE__ */ new Map();
-    const add = (el) => {
+    const add2 = (el) => {
       tally.set(el, (tally.get(el) ?? 0) + 1);
     };
     for (const p of [b.pillars.year, b.pillars.month, b.pillars.day, b.pillars.hour]) {
       if (p === null) continue;
-      add(p.stemElement);
+      add2(p.stemElement);
       const qi = p.hiddenStems.find((h) => h.primary);
-      add(qi ? qi.element : p.branchElement);
+      add2(qi ? qi.element : p.branchElement);
     }
     const summary = [...tally.entries()].map(([el, n]) => `${el}\xD7${n}`).join(" ");
     out.push(
@@ -58669,6 +58671,992 @@ function runAnswerPlan(input, options) {
   return { publicResult, answerPlan };
 }
 
+// packages/contracts/src/clarification-plan.ts
+var CLARIFICATION_PLAN_CONTRACT_VERSION = "clarification-plan/v1";
+var ClarificationQuestionId = external_exports.enum([
+  "topic-intent",
+  "response-depth",
+  "birth-time-reliability",
+  "target-period",
+  "ruleset-variant",
+  "system-scope"
+]);
+var ClarificationStatus = external_exports.enum(["ready", "requires-clarification", "degraded"]);
+var ConfirmationState = external_exports.enum(["confirmed", "unavailable", "not-required"]);
+var ResponseDepth = external_exports.enum(["brief", "standard", "detailed"]);
+var ConditionalResolution = external_exports.enum(["not-required", "confirmed", "unavailable", "unresolved"]);
+var ClarificationPlanningInput = external_exports.strictObject({
+  topic: InterpretationTopic.nullable(),
+  requestedDepth: ResponseDepth.nullable(),
+  systemScope: ChartSystem.nullable(),
+  timeSensitiveClaims: external_exports.boolean(),
+  birthTimeReliability: ConditionalResolution,
+  timingRequest: external_exports.boolean(),
+  targetPeriod: ConditionalResolution,
+  rulesetVariantSensitiveClaims: external_exports.boolean(),
+  rulesetVariant: ConditionalResolution
+}).superRefine((input, context) => {
+  const conditionalSettings = [
+    {
+      required: input.timeSensitiveClaims,
+      value: input.birthTimeReliability,
+      path: ["birthTimeReliability"]
+    },
+    {
+      required: input.timingRequest,
+      value: input.targetPeriod,
+      path: ["targetPeriod"]
+    },
+    {
+      required: input.rulesetVariantSensitiveClaims,
+      value: input.rulesetVariant,
+      path: ["rulesetVariant"]
+    }
+  ];
+  for (const setting2 of conditionalSettings) {
+    const invalid = setting2.required ? setting2.value === "not-required" : setting2.value !== "not-required";
+    if (invalid) {
+      context.addIssue({
+        code: "custom",
+        path: [...setting2.path],
+        message: "conditional setting must be explicit exactly when its claim class is material"
+      });
+    }
+  }
+});
+var ClarificationValueId = external_exports.enum([
+  "topic:character",
+  "topic:career",
+  "topic:wealth",
+  "topic:marriage",
+  "topic:studies",
+  "topic:health",
+  "topic:general",
+  "depth:brief",
+  "depth:standard",
+  "depth:detailed",
+  "system:western",
+  "system:bazi",
+  "system:ziwei",
+  "system:vedic",
+  "birth-time-reliability:confirmed",
+  "target-period:confirmed",
+  "ruleset-variant:confirmed"
+]);
+var ClarificationNoteCode = external_exports.enum([
+  "birth-time-reliability-unavailable",
+  "target-period-unavailable",
+  "ruleset-variant-unavailable"
+]);
+var DegradationCode = external_exports.enum([
+  "omit-time-sensitive-claims",
+  "omit-timing-claims",
+  "omit-ruleset-variant-sensitive-claims"
+]);
+var ConfirmedClarificationSetting = external_exports.strictObject({
+  settingId: ClarificationQuestionId,
+  state: ConfirmationState,
+  valueId: ClarificationValueId.optional()
+}).superRefine((setting2, context) => {
+  if (setting2.state === "confirmed" && setting2.valueId === void 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["valueId"],
+      message: "confirmed settings require a bounded value id"
+    });
+  }
+  if (setting2.state !== "confirmed" && setting2.valueId !== void 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["valueId"],
+      message: "only confirmed settings may retain a value id"
+    });
+  }
+});
+function unique(values) {
+  return new Set(values).size === values.length;
+}
+var QUESTION_ORDER = [
+  "topic-intent",
+  "response-depth",
+  "birth-time-reliability",
+  "target-period",
+  "ruleset-variant",
+  "system-scope"
+];
+var UNAVAILABLE_REQUIREMENTS = {
+  "birth-time-reliability": {
+    noteCode: "birth-time-reliability-unavailable",
+    degradationCode: "omit-time-sensitive-claims"
+  },
+  "target-period": {
+    noteCode: "target-period-unavailable",
+    degradationCode: "omit-timing-claims"
+  },
+  "ruleset-variant": {
+    noteCode: "ruleset-variant-unavailable",
+    degradationCode: "omit-ruleset-variant-sensitive-claims"
+  }
+};
+function sameStrings(left, right) {
+  return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+var ClarificationPlan = external_exports.strictObject({
+  contractVersion: external_exports.literal(CLARIFICATION_PLAN_CONTRACT_VERSION),
+  status: ClarificationStatus,
+  requiredQuestionIds: external_exports.array(ClarificationQuestionId).max(6).refine(unique),
+  confirmedSettings: external_exports.array(ConfirmedClarificationSetting).max(6),
+  clarificationNoteCodes: external_exports.array(ClarificationNoteCode).max(3).refine(unique),
+  degradationCodes: external_exports.array(DegradationCode).max(3).refine(unique),
+  transient: external_exports.literal(true),
+  regenerable: external_exports.literal(true)
+}).superRefine((plan, context) => {
+  const settingIds = plan.confirmedSettings.map((setting2) => setting2.settingId);
+  if (!unique(settingIds)) {
+    context.addIssue({
+      code: "custom",
+      path: ["confirmedSettings"],
+      message: "setting ids must be unique"
+    });
+  }
+  const unresolvedSet = new Set(plan.requiredQuestionIds);
+  const expectedSettingOrder = QUESTION_ORDER.filter(
+    (questionId) => !unresolvedSet.has(questionId)
+  );
+  const coveredSettingIds = /* @__PURE__ */ new Set([...settingIds, ...plan.requiredQuestionIds]);
+  if (coveredSettingIds.size !== QUESTION_ORDER.length || QUESTION_ORDER.some((questionId) => !coveredSettingIds.has(questionId))) {
+    context.addIssue({
+      code: "custom",
+      path: ["confirmedSettings"],
+      message: "every material setting must be explicitly resolved or require clarification"
+    });
+  }
+  if (!sameStrings(
+    plan.requiredQuestionIds,
+    QUESTION_ORDER.filter((id) => unresolvedSet.has(id))
+  )) {
+    context.addIssue({
+      code: "custom",
+      path: ["requiredQuestionIds"],
+      message: "required questions must use the fixed materiality order"
+    });
+  }
+  if (!sameStrings(settingIds, expectedSettingOrder)) {
+    context.addIssue({
+      code: "custom",
+      path: ["confirmedSettings"],
+      message: "resolved settings must use the fixed materiality order"
+    });
+  }
+  for (const resolvedSetting of plan.confirmedSettings) {
+    const unavailableRequirement = UNAVAILABLE_REQUIREMENTS[resolvedSetting.settingId];
+    if (resolvedSetting.state === "unavailable" && unavailableRequirement === void 0) {
+      context.addIssue({
+        code: "custom",
+        path: ["confirmedSettings"],
+        message: "only conditional material settings may be unavailable"
+      });
+    }
+    if (resolvedSetting.state === "not-required" && unavailableRequirement === void 0) {
+      context.addIssue({
+        code: "custom",
+        path: ["confirmedSettings"],
+        message: "topic, depth, and system scope must be confirmed before delivery"
+      });
+    }
+    if (resolvedSetting.state === "confirmed" && !resolvedSetting.valueId?.startsWith(
+      resolvedSetting.settingId === "topic-intent" ? "topic:" : resolvedSetting.settingId === "response-depth" ? "depth:" : resolvedSetting.settingId === "system-scope" ? "system:" : `${resolvedSetting.settingId}:`
+    )) {
+      context.addIssue({
+        code: "custom",
+        path: ["confirmedSettings"],
+        message: "confirmed value id must belong to its resolved setting"
+      });
+    }
+  }
+  if (plan.status === "requires-clarification") {
+    if (plan.requiredQuestionIds.length === 0) {
+      context.addIssue({
+        code: "custom",
+        path: ["requiredQuestionIds"],
+        message: "clarification requires at least one question"
+      });
+    }
+    if (plan.degradationCodes.length > 0) {
+      context.addIssue({
+        code: "custom",
+        path: ["degradationCodes"],
+        message: "a plan with unanswered material settings cannot deliver a degradation"
+      });
+    }
+  } else if (plan.requiredQuestionIds.length > 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["requiredQuestionIds"],
+      message: "ready or degraded plans cannot retain unanswered material settings"
+    });
+  }
+  if (plan.status === "ready" && plan.degradationCodes.length > 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["degradationCodes"],
+      message: "ready plans cannot omit a material claim class"
+    });
+  }
+  if (plan.status === "degraded" && plan.degradationCodes.length === 0) {
+    context.addIssue({
+      code: "custom",
+      path: ["degradationCodes"],
+      message: "degraded plans require an explicit omitted claim class"
+    });
+  }
+  if (plan.status !== "requires-clarification") {
+    const unavailableRequirements = plan.confirmedSettings.filter((setting2) => setting2.state === "unavailable").flatMap((setting2) => {
+      const requirement = UNAVAILABLE_REQUIREMENTS[setting2.settingId];
+      return requirement === void 0 ? [] : [requirement];
+    });
+    if (!sameStrings(
+      plan.clarificationNoteCodes,
+      unavailableRequirements.map((requirement) => requirement.noteCode)
+    ) || !sameStrings(
+      plan.degradationCodes,
+      unavailableRequirements.map((requirement) => requirement.degradationCode)
+    )) {
+      context.addIssue({
+        code: "custom",
+        path: ["degradationCodes"],
+        message: "each unavailable setting must retain its matching note and omitted claim class"
+      });
+    }
+  }
+});
+
+// packages/interpret/src/clarification-materiality.ts
+var QUESTION_ORDER2 = [
+  "topic-intent",
+  "response-depth",
+  "birth-time-reliability",
+  "target-period",
+  "ruleset-variant",
+  "system-scope"
+];
+function setting(settingId, state, valueId) {
+  return ConfirmedClarificationSetting.parse({
+    settingId,
+    state,
+    ...valueId === void 0 ? {} : { valueId }
+  });
+}
+function planClarificationMateriality(rawInput) {
+  const input = ClarificationPlanningInput.parse(rawInput);
+  const unresolved = /* @__PURE__ */ new Set();
+  const confirmedSettings = [];
+  const clarificationNoteCodes = [];
+  const degradationCodes = [];
+  if (input.topic === null) unresolved.add("topic-intent");
+  else confirmedSettings.push(setting("topic-intent", "confirmed", `topic:${input.topic}`));
+  if (input.requestedDepth === null) unresolved.add("response-depth");
+  else
+    confirmedSettings.push(setting("response-depth", "confirmed", `depth:${input.requestedDepth}`));
+  if (input.timeSensitiveClaims) {
+    switch (input.birthTimeReliability) {
+      case "confirmed":
+        confirmedSettings.push(
+          setting("birth-time-reliability", "confirmed", "birth-time-reliability:confirmed")
+        );
+        break;
+      case "unavailable":
+        confirmedSettings.push(setting("birth-time-reliability", "unavailable"));
+        clarificationNoteCodes.push("birth-time-reliability-unavailable");
+        degradationCodes.push("omit-time-sensitive-claims");
+        break;
+      case "unresolved":
+        unresolved.add("birth-time-reliability");
+        break;
+    }
+  } else {
+    confirmedSettings.push(setting("birth-time-reliability", "not-required"));
+  }
+  if (input.timingRequest) {
+    switch (input.targetPeriod) {
+      case "confirmed":
+        confirmedSettings.push(setting("target-period", "confirmed", "target-period:confirmed"));
+        break;
+      case "unavailable":
+        confirmedSettings.push(setting("target-period", "unavailable"));
+        clarificationNoteCodes.push("target-period-unavailable");
+        degradationCodes.push("omit-timing-claims");
+        break;
+      case "unresolved":
+        unresolved.add("target-period");
+        break;
+    }
+  } else {
+    confirmedSettings.push(setting("target-period", "not-required"));
+  }
+  if (input.rulesetVariantSensitiveClaims) {
+    switch (input.rulesetVariant) {
+      case "confirmed":
+        confirmedSettings.push(
+          setting("ruleset-variant", "confirmed", "ruleset-variant:confirmed")
+        );
+        break;
+      case "unavailable":
+        confirmedSettings.push(setting("ruleset-variant", "unavailable"));
+        clarificationNoteCodes.push("ruleset-variant-unavailable");
+        degradationCodes.push("omit-ruleset-variant-sensitive-claims");
+        break;
+      case "unresolved":
+        unresolved.add("ruleset-variant");
+        break;
+    }
+  } else {
+    confirmedSettings.push(setting("ruleset-variant", "not-required"));
+  }
+  if (input.systemScope === null) unresolved.add("system-scope");
+  else confirmedSettings.push(setting("system-scope", "confirmed", `system:${input.systemScope}`));
+  const requiredQuestionIds = QUESTION_ORDER2.filter((questionId) => unresolved.has(questionId));
+  const hasUnresolvedMateriality = requiredQuestionIds.length > 0;
+  return ClarificationPlan.parse({
+    contractVersion: CLARIFICATION_PLAN_CONTRACT_VERSION,
+    status: hasUnresolvedMateriality ? "requires-clarification" : degradationCodes.length > 0 ? "degraded" : "ready",
+    requiredQuestionIds,
+    confirmedSettings,
+    clarificationNoteCodes,
+    degradationCodes: hasUnresolvedMateriality ? [] : degradationCodes,
+    transient: true,
+    regenerable: true
+  });
+}
+
+// packages/contracts/src/answer-claim.ts
+var ANSWER_CLAIM_CANDIDATE_CONTRACT_VERSION = "answer-claim-candidate/v1";
+var APPROVED_ANSWER_CLAIM_CONTRACT_VERSION = "approved-answer-claim/v1";
+var NARRATIVE_TRACE_CONTRACT_VERSION = "narrative-trace/v1";
+var AnswerClaimInvalidationCause = external_exports.enum([
+  "input-chart",
+  "settings",
+  "engine-provider",
+  "ruleset",
+  "source-profile",
+  "topic-lens",
+  "language-narrator"
+]);
+var ClaimRulesetRef = external_exports.strictObject({
+  id: external_exports.string().min(1).max(160),
+  version: external_exports.string().min(1).max(80)
+});
+var FactRef = external_exports.string().regex(/^fact-\d+$/, "fact refs must use the fact-<number> form");
+var CandidateId = external_exports.string().regex(/^claim-candidate:fact-\d+$/, "candidate ids must derive from one fact id");
+var ApprovedClaimId = external_exports.string().regex(/^approved-claim:fact-\d+$/, "approved claim ids must derive from one fact id");
+var TraceId = external_exports.string().regex(/^narrative-trace:paragraph-\d+$/, "trace ids must derive from one paragraph id");
+var ParagraphId = external_exports.string().regex(/^paragraph-\d+$/, "paragraph ids must use paragraph-<number>");
+function uniqueStrings(values) {
+  return new Set(values).size === values.length;
+}
+function uniqueConstraintRefs(values) {
+  return new Set(values.map((value) => `${value.kind}:${value.index}`)).size === values.length;
+}
+var ClaimConstraintRefs = external_exports.array(PlanConstraintRef).max(20).refine(uniqueConstraintRefs, "constraint refs must be unique");
+var ClaimMechanismRefs = external_exports.array(external_exports.string().min(1).max(300)).min(1).max(20).refine(uniqueStrings, "mechanism refs must be unique");
+var ClaimRulesetRefs = external_exports.array(ClaimRulesetRef).min(1).max(12).refine(
+  (values) => uniqueStrings(values.map((value) => `${value.id}@${value.version}`)),
+  "ruleset refs must be unique"
+);
+var ClaimInvalidationCauses = external_exports.array(AnswerClaimInvalidationCause).min(1).max(7).refine(uniqueStrings, "invalidation causes must be unique");
+var AnswerClaimCandidate = external_exports.strictObject({
+  contractVersion: external_exports.literal(ANSWER_CLAIM_CANDIDATE_CONTRACT_VERSION),
+  candidateId: CandidateId,
+  system: ChartSystem,
+  topic: InterpretationTopic,
+  claim: external_exports.string().min(1).max(2e3),
+  factRefs: external_exports.array(FactRef).length(1),
+  mechanismRefs: ClaimMechanismRefs,
+  rulesetRefs: ClaimRulesetRefs,
+  constraintRefs: ClaimConstraintRefs,
+  invalidationCauses: ClaimInvalidationCauses
+});
+var ApprovedAnswerClaim = external_exports.strictObject({
+  contractVersion: external_exports.literal(APPROVED_ANSWER_CLAIM_CONTRACT_VERSION),
+  claimId: ApprovedClaimId,
+  candidateId: CandidateId,
+  approval: external_exports.literal("deterministic-path-verified"),
+  system: ChartSystem,
+  topic: InterpretationTopic,
+  claim: external_exports.string().min(1).max(2e3),
+  factRefs: external_exports.array(FactRef).length(1),
+  mechanismRefs: ClaimMechanismRefs,
+  rulesetRefs: ClaimRulesetRefs,
+  constraintRefs: ClaimConstraintRefs,
+  invalidationCauses: ClaimInvalidationCauses
+});
+var NarrativeTrace = external_exports.strictObject({
+  contractVersion: external_exports.literal(NARRATIVE_TRACE_CONTRACT_VERSION),
+  traceId: TraceId,
+  paragraphId: ParagraphId,
+  topic: InterpretationTopic,
+  approvedClaimIds: external_exports.array(ApprovedClaimId).min(1).max(20).refine(uniqueStrings, "approved claim ids must be unique"),
+  factRefs: external_exports.array(FactRef).min(1).max(20).refine(uniqueStrings, "fact refs must be unique"),
+  mechanismRefs: ClaimMechanismRefs,
+  constraintRefs: ClaimConstraintRefs,
+  invalidationCauses: ClaimInvalidationCauses,
+  visibleText: external_exports.string().min(1).max(12e3),
+  transient: external_exports.literal(true),
+  regenerable: external_exports.literal(true)
+});
+
+// packages/interpret/src/answer-claim-chain.ts
+var CANDIDATE_INVALIDATION_CAUSES = [
+  "input-chart",
+  "settings",
+  "engine-provider",
+  "ruleset",
+  "source-profile",
+  "topic-lens"
+];
+var TRACE_INVALIDATION_CAUSES = [
+  ...CANDIDATE_INVALIDATION_CAUSES,
+  "language-narrator"
+];
+var RULESET_NAMESPACE = {
+  western: /^western(?:-|$)/,
+  bazi: /^bazi(?:-|$)/,
+  ziwei: /^(?:ziwei|iztro)(?:-|$)/,
+  vedic: /^vedic(?:-|$)/
+};
+function add(issues, code, path) {
+  issues.push({ code, path });
+}
+function systemForEvidence(kind) {
+  switch (kind) {
+    case "western":
+    case "western-rule":
+      return "western";
+    case "bazi":
+    case "bazi-rule":
+      return "bazi";
+    case "ziwei":
+    case "ziwei-horoscope":
+    case "ziwei-rule":
+      return "ziwei";
+    case "vedic":
+    case "vedic-rule":
+      return "vedic";
+    case "time":
+      return null;
+  }
+}
+function sourceSystem(fact2) {
+  const systems = /* @__PURE__ */ new Set();
+  for (const evidence of fact2.evidence) {
+    const system = systemForEvidence(evidence.kind);
+    if (system !== null) systems.add(system);
+  }
+  return systems.size === 1 ? [...systems][0] : null;
+}
+function expectedConstraintRefs(fact2, answerPlan) {
+  if (fact2.caveat === void 0) return [];
+  const index = answerPlan.requiredCaveats.indexOf(fact2.caveat);
+  return index === -1 ? null : [{ kind: "caveat", index }];
+}
+function rulesetRefsForSystem(system, publicResult) {
+  return publicResult.rulesets.filter((ruleset) => RULESET_NAMESPACE[system].test(ruleset.id));
+}
+function contextLinkageIssues(context) {
+  const issues = [];
+  const { answerPlan, publicResult } = context;
+  if (answerPlan.engineVersion !== publicResult.engineVersion || answerPlan.sourceSchemaVersion !== publicResult.sourceSchemaVersion) {
+    add(issues, "CONTEXT_LINKAGE", "$.context.version");
+  }
+  const publicFactsById = new Map(publicResult.facts.map((fact2) => [fact2.id, fact2]));
+  const selectedFactIds = answerPlan.selectedFacts.map((fact2) => fact2.id);
+  const allowedFactIds = answerPlan.allowedFactIds;
+  const citedFactIds = answerPlan.responseRequirements.citeSelectedFactIds;
+  if (new Set(selectedFactIds).size !== selectedFactIds.length || !sameJson(selectedFactIds, allowedFactIds) || !sameJson(selectedFactIds, citedFactIds)) {
+    add(issues, "CONTEXT_LINKAGE", "$.answerPlan.selectedFacts");
+  }
+  for (const [index, fact2] of answerPlan.selectedFacts.entries()) {
+    if (fact2.topic !== answerPlan.request.topic || !sameJson(publicFactsById.get(fact2.id), fact2)) {
+      add(issues, "CONTEXT_LINKAGE", `$.answerPlan.selectedFacts[${index}]`);
+    }
+  }
+  return issues;
+}
+function expectedCandidate(fact2, context) {
+  const system = sourceSystem(fact2);
+  const constraintRefs = expectedConstraintRefs(fact2, context.answerPlan);
+  if (system === null || constraintRefs === null) return null;
+  const rulesetRefs = rulesetRefsForSystem(system, context.publicResult);
+  if (rulesetRefs.length === 0) return null;
+  return AnswerClaimCandidate.parse({
+    contractVersion: ANSWER_CLAIM_CANDIDATE_CONTRACT_VERSION,
+    candidateId: `claim-candidate:${fact2.id}`,
+    system,
+    topic: fact2.topic,
+    claim: fact2.claim,
+    factRefs: [fact2.id],
+    mechanismRefs: [...new Set(fact2.evidence.map((evidence) => evidence.ref))],
+    rulesetRefs,
+    constraintRefs,
+    invalidationCauses: CANDIDATE_INVALIDATION_CAUSES
+  });
+}
+function projectAnswerClaimCandidates(context) {
+  const issues = contextLinkageIssues(context);
+  if (issues.length > 0) return { candidates: [], issues };
+  const candidates = [];
+  for (const [index, fact2] of context.answerPlan.selectedFacts.entries()) {
+    const candidate = expectedCandidate(fact2, context);
+    if (candidate === null) {
+      add(issues, "CANDIDATE_CONTENT", `$.answerPlan.selectedFacts[${index}]`);
+      continue;
+    }
+    candidates.push(candidate);
+  }
+  return { candidates, issues };
+}
+function verifyAnswerClaimCandidates(context, candidates) {
+  const issues = [];
+  const expected = projectAnswerClaimCandidates(context);
+  issues.push(...expected.issues);
+  if (candidates.length !== expected.candidates.length) {
+    add(issues, "CANDIDATE_SET", "$.candidates");
+  }
+  for (const [index, raw] of candidates.entries()) {
+    const parsed = AnswerClaimCandidate.safeParse(raw);
+    if (!parsed.success) {
+      add(issues, "CANDIDATE_SHAPE", `$.candidates[${index}]`);
+      continue;
+    }
+    const expectedCandidateAtIndex = expected.candidates[index];
+    if (expectedCandidateAtIndex === void 0 || canonicalJson(parsed.data) !== canonicalJson(expectedCandidateAtIndex)) {
+      add(issues, "CANDIDATE_CONTENT", `$.candidates[${index}]`);
+    }
+  }
+  return { ok: issues.length === 0, issues };
+}
+function approveAnswerClaimCandidates(context, candidates) {
+  const verification = verifyAnswerClaimCandidates(context, candidates);
+  if (!verification.ok) {
+    return {
+      approvedClaims: [],
+      issues: [...verification.issues, { code: "APPROVAL_BLOCKED", path: "$.candidates" }]
+    };
+  }
+  const approvedClaims = candidates.map((rawCandidate) => {
+    const candidate = AnswerClaimCandidate.parse(rawCandidate);
+    return ApprovedAnswerClaim.parse({
+      contractVersion: APPROVED_ANSWER_CLAIM_CONTRACT_VERSION,
+      claimId: candidate.candidateId.replace("claim-candidate:", "approved-claim:"),
+      candidateId: candidate.candidateId,
+      approval: "deterministic-path-verified",
+      system: candidate.system,
+      topic: candidate.topic,
+      claim: candidate.claim,
+      factRefs: candidate.factRefs,
+      mechanismRefs: candidate.mechanismRefs,
+      rulesetRefs: candidate.rulesetRefs,
+      constraintRefs: candidate.constraintRefs,
+      invalidationCauses: candidate.invalidationCauses
+    });
+  });
+  return { approvedClaims, issues: [] };
+}
+function sameJson(left, right) {
+  return canonicalJson(left) === canonicalJson(right);
+}
+
+// packages/contracts/src/response-view.ts
+var RESPONSE_VIEW_CONTRACT_VERSION = "response-view/v1";
+var ApprovedClaimId2 = external_exports.string().regex(/^approved-claim:fact-\d+$/, "approved claim ids must derive from one fact id");
+var unique2 = (values) => new Set(values).size === values.length;
+var ResponseClaimSensitivity = external_exports.enum([
+  "time-sensitive",
+  "timing",
+  "ruleset-variant-sensitive"
+]);
+var ResponseClaimEligibility = external_exports.strictObject({
+  claimId: ApprovedClaimId2,
+  sensitivities: external_exports.array(ResponseClaimSensitivity).max(3).refine(unique2)
+});
+var ResponseViewPlanningInput = external_exports.strictObject({
+  clarificationPlan: ClarificationPlan,
+  approvedClaims: external_exports.array(ApprovedAnswerClaim).min(1).max(20),
+  claimEligibility: external_exports.array(ResponseClaimEligibility).min(1).max(20)
+}).superRefine((input, context) => {
+  const claimIds = input.approvedClaims.map((claim) => claim.claimId);
+  const eligibilityIds = input.claimEligibility.map((eligibility) => eligibility.claimId);
+  if (!unique2(claimIds)) {
+    context.addIssue({
+      code: "custom",
+      path: ["approvedClaims"],
+      message: "approved claim ids must be unique"
+    });
+  }
+  if (!unique2(eligibilityIds)) {
+    context.addIssue({
+      code: "custom",
+      path: ["claimEligibility"],
+      message: "claim eligibility ids must be unique"
+    });
+  }
+  if (claimIds.length !== eligibilityIds.length || claimIds.some((claimId, index) => eligibilityIds[index] !== claimId)) {
+    context.addIssue({
+      code: "custom",
+      path: ["claimEligibility"],
+      message: "claim eligibility must cover approved claims in deterministic claim order"
+    });
+  }
+});
+var ResponseContentCategory = external_exports.enum([
+  "conclusion",
+  "mechanism-and-implication",
+  "material-caveat",
+  "practical-options"
+]);
+var ClarificationNoteMaterialCaveatId = external_exports.enum([
+  "clarification-note:birth-time-reliability-unavailable",
+  "clarification-note:target-period-unavailable",
+  "clarification-note:ruleset-variant-unavailable"
+]);
+var DegradationMaterialCaveatId = external_exports.enum([
+  "degradation:omit-time-sensitive-claims",
+  "degradation:omit-timing-claims",
+  "degradation:omit-ruleset-variant-sensitive-claims"
+]);
+var ClaimConstraintMaterialCaveatId = external_exports.string().regex(
+  /^claim-constraint:approved-claim:fact-\d+:(?:caveat|warning):\d+$/,
+  "claim constraint caveat ids must resolve to one approved claim constraint"
+);
+var MaterialCaveatId = external_exports.union([
+  ClarificationNoteMaterialCaveatId,
+  DegradationMaterialCaveatId,
+  ClaimConstraintMaterialCaveatId
+]);
+var DEGRADATION_NOTE_PAIRS = [
+  {
+    note: "clarification-note:birth-time-reliability-unavailable",
+    degradation: "degradation:omit-time-sensitive-claims"
+  },
+  {
+    note: "clarification-note:target-period-unavailable",
+    degradation: "degradation:omit-timing-claims"
+  },
+  {
+    note: "clarification-note:ruleset-variant-unavailable",
+    degradation: "degradation:omit-ruleset-variant-sensitive-claims"
+  }
+];
+function expectedContentCategories(requestedDepth, materialCaveatIds) {
+  return [
+    "conclusion",
+    "mechanism-and-implication",
+    ...materialCaveatIds.length === 0 ? [] : ["material-caveat"],
+    ...requestedDepth === "brief" ? [] : ["practical-options"]
+  ];
+}
+var ResponseView = external_exports.strictObject({
+  contractVersion: external_exports.literal(RESPONSE_VIEW_CONTRACT_VERSION),
+  clarificationStatus: external_exports.enum(["ready", "degraded"]),
+  topic: InterpretationTopic,
+  requestedDepth: ResponseDepth,
+  system: ChartSystem,
+  approvedClaimIds: external_exports.array(ApprovedClaimId2).min(1).max(20).refine(unique2),
+  materialCaveatIds: external_exports.array(MaterialCaveatId).max(403).refine(unique2),
+  allowedContentCategories: external_exports.array(ResponseContentCategory).min(2).max(4).refine(unique2),
+  auditAvailability: external_exports.literal("explicit-request-only"),
+  transient: external_exports.literal(true),
+  regenerable: external_exports.literal(true)
+}).superRefine((view, context) => {
+  const expectedCategories = expectedContentCategories(
+    view.requestedDepth,
+    view.materialCaveatIds
+  );
+  if (expectedCategories.length !== view.allowedContentCategories.length || expectedCategories.some(
+    (category, index) => category !== view.allowedContentCategories[index]
+  )) {
+    context.addIssue({
+      code: "custom",
+      path: ["allowedContentCategories"],
+      message: "content categories must follow the fixed depth and caveat policy"
+    });
+  }
+  const approvedClaimIds = new Set(view.approvedClaimIds);
+  for (const [index, caveatId] of view.materialCaveatIds.entries()) {
+    if (caveatId.startsWith("claim-constraint:")) {
+      const claimId = caveatId.split(":").slice(1, 3).join(":");
+      if (!approvedClaimIds.has(claimId)) {
+        context.addIssue({
+          code: "custom",
+          path: ["materialCaveatIds", index],
+          message: "claim constraint caveats must resolve to an included approved claim"
+        });
+      }
+    }
+  }
+  const hasClarificationCaveat = view.materialCaveatIds.some(
+    (caveatId) => caveatId.startsWith("clarification-note:") || caveatId.startsWith("degradation:")
+  );
+  if (view.clarificationStatus === "ready" && hasClarificationCaveat) {
+    context.addIssue({
+      code: "custom",
+      path: ["materialCaveatIds"],
+      message: "ready views cannot retain degradation material"
+    });
+  }
+  if (view.clarificationStatus === "degraded") {
+    for (const pair of DEGRADATION_NOTE_PAIRS) {
+      const hasNote = view.materialCaveatIds.includes(pair.note);
+      const hasDegradation = view.materialCaveatIds.includes(pair.degradation);
+      if (hasNote !== hasDegradation) {
+        context.addIssue({
+          code: "custom",
+          path: ["materialCaveatIds"],
+          message: "every degradation must retain its matching clarification note"
+        });
+      }
+    }
+    if (!hasClarificationCaveat) {
+      context.addIssue({
+        code: "custom",
+        path: ["materialCaveatIds"],
+        message: "degraded views require retained clarification material"
+      });
+    }
+  }
+});
+
+// packages/interpret/src/response-view.ts
+var ResponseViewPlanningError = class extends Error {
+  constructor(code) {
+    super(code);
+    this.code = code;
+    this.name = "ResponseViewPlanningError";
+  }
+  code;
+};
+var DEGRADATION_BY_SENSITIVITY = {
+  "time-sensitive": "omit-time-sensitive-claims",
+  timing: "omit-timing-claims",
+  "ruleset-variant-sensitive": "omit-ruleset-variant-sensitive-claims"
+};
+function resolvedValue(plan, settingId, prefix) {
+  const setting2 = plan.confirmedSettings.find((entry) => entry.settingId === settingId);
+  if (setting2?.state !== "confirmed" || setting2.valueId === void 0) {
+    throw new ResponseViewPlanningError("SETTING_RESOLUTION");
+  }
+  if (!setting2.valueId.startsWith(prefix)) {
+    throw new ResponseViewPlanningError("SETTING_RESOLUTION");
+  }
+  return setting2.valueId.slice(prefix.length);
+}
+function claimConstraintMaterialCaveats(claims) {
+  return claims.flatMap(
+    (claim) => claim.constraintRefs.filter((reference) => reference.kind === "caveat" || reference.kind === "warning").map(
+      (reference) => `claim-constraint:${claim.claimId}:${reference.kind}:${reference.index}`
+    )
+  );
+}
+function clarificationMaterialCaveats(plan) {
+  return [
+    ...plan.clarificationNoteCodes.map(
+      (noteCode) => `clarification-note:${noteCode}`
+    ),
+    ...plan.degradationCodes.map(
+      (degradationCode) => `degradation:${degradationCode}`
+    )
+  ];
+}
+function shouldOmitClaim(sensitivities, plan) {
+  const degradations = new Set(plan.degradationCodes);
+  return sensitivities.some(
+    (sensitivity) => degradations.has(DEGRADATION_BY_SENSITIVITY[sensitivity])
+  );
+}
+function projectResponseView(rawInput) {
+  const input = ResponseViewPlanningInput.parse(rawInput);
+  const plan = input.clarificationPlan;
+  if (plan.status === "requires-clarification") {
+    throw new ResponseViewPlanningError("CLARIFICATION_REQUIRED");
+  }
+  const topic = resolvedValue(plan, "topic-intent", "topic:");
+  const requestedDepth = resolvedValue(plan, "response-depth", "depth:");
+  const system = resolvedValue(plan, "system-scope", "system:");
+  const retainedClaims = input.approvedClaims.filter((claim, index) => {
+    if (claim.topic !== topic) throw new ResponseViewPlanningError("TOPIC_SCOPE_MISMATCH");
+    if (claim.system !== system) throw new ResponseViewPlanningError("SYSTEM_SCOPE_MISMATCH");
+    return !shouldOmitClaim(input.claimEligibility[index].sensitivities, plan);
+  });
+  if (retainedClaims.length === 0) {
+    throw new ResponseViewPlanningError("NO_ELIGIBLE_APPROVED_CLAIMS");
+  }
+  const materialCaveatIds = [
+    ...clarificationMaterialCaveats(plan),
+    ...claimConstraintMaterialCaveats(retainedClaims)
+  ];
+  return ResponseView.parse({
+    contractVersion: RESPONSE_VIEW_CONTRACT_VERSION,
+    clarificationStatus: plan.status,
+    topic,
+    requestedDepth,
+    system,
+    approvedClaimIds: retainedClaims.map((claim) => claim.claimId),
+    materialCaveatIds,
+    allowedContentCategories: [
+      "conclusion",
+      "mechanism-and-implication",
+      ...materialCaveatIds.length === 0 ? [] : ["material-caveat"],
+      ...requestedDepth === "brief" ? [] : ["practical-options"]
+    ],
+    auditAvailability: "explicit-request-only",
+    transient: true,
+    regenerable: true
+  });
+}
+
+// packages/orchestrator/src/clarified-response.ts
+var ClarifiedResponseSurfaceInput = external_exports.strictObject({
+  planningInput: ClarificationPlanningInput,
+  approvedClaims: external_exports.array(ApprovedAnswerClaim).min(1).max(20),
+  claimEligibility: external_exports.array(ResponseClaimEligibility).min(1).max(20)
+});
+function buildClarifiedResponseView(rawInput) {
+  const surfaceInput = ClarifiedResponseSurfaceInput.parse(rawInput);
+  const plan = planClarificationMateriality(surfaceInput.planningInput);
+  if (plan.status === "requires-clarification") {
+    throw new ResponseViewPlanningError("CLARIFICATION_REQUIRED");
+  }
+  return projectResponseView({
+    clarificationPlan: plan,
+    approvedClaims: surfaceInput.approvedClaims,
+    claimEligibility: surfaceInput.claimEligibility
+  });
+}
+
+// packages/orchestrator/src/bazi-career-journey.ts
+var BaziCareerJourneyError = class extends Error {
+  constructor(code) {
+    super(code);
+    this.code = code;
+    this.name = "BaziCareerJourneyError";
+  }
+  code;
+};
+var BaziCareerJourneyInput = external_exports.strictObject({
+  // Parsed through the bounded facade below: a caller may pass an already
+  // normalized BirthInput and the engine's own parsing stays canonical.
+  birthInput: external_exports.unknown(),
+  planningInput: ClarificationPlanningInput
+});
+function projectBaziCareerJourney(rawInput, options) {
+  const { clarificationPlan, responseView } = runBaziCareerJourney(rawInput, options);
+  return { clarificationPlan, responseView };
+}
+function runBaziCareerJourney(rawInput, options) {
+  const input = BaziCareerJourneyInput.parse(rawInput);
+  const birthInput = parseBirthInput(input.birthInput);
+  if (input.planningInput.topic !== "career" || input.planningInput.systemScope !== "bazi") {
+    throw new BaziCareerJourneyError("TOPIC_SCOPE");
+  }
+  const observedReliability = birthInput.timeAccuracy === "unknown" ? "unavailable" : "confirmed";
+  if (input.planningInput.timeSensitiveClaims !== true || input.planningInput.birthTimeReliability !== observedReliability) {
+    throw new BaziCareerJourneyError("SETTING_CONFLICT");
+  }
+  const clarificationPlan = planClarificationMateriality(input.planningInput);
+  if (clarificationPlan.status === "requires-clarification") {
+    throw new BaziCareerJourneyError("CLARIFICATION_REQUIRED");
+  }
+  const { publicResult, answerPlan } = runAnswerPlan(birthInput, {
+    now: options.now,
+    topic: "career"
+  });
+  const context = { publicResult, answerPlan };
+  const approval = approveAnswerClaimCandidates(
+    context,
+    projectAnswerClaimCandidates(context).candidates
+  );
+  if (approval.issues.length > 0 || approval.approvedClaims.length === 0) {
+    throw new BaziCareerJourneyError("APPROVAL_BLOCKED");
+  }
+  const baziClaims = approval.approvedClaims.filter((claim) => claim.system === "bazi");
+  if (baziClaims.length === 0) {
+    throw new BaziCareerJourneyError("NO_ELIGIBLE_CLAIMS");
+  }
+  const timeSensitivities = publicResult.inputReliability.birthTimeKnown ? [] : ["time-sensitive"];
+  const responseView = buildClarifiedResponseView({
+    planningInput: input.planningInput,
+    approvedClaims: baziClaims,
+    claimEligibility: baziClaims.map((claim) => ({
+      claimId: claim.claimId,
+      sensitivities: [
+        ...timeSensitivities,
+        ...claim.mechanismRefs.some((ref) => ref.startsWith("bazi-rule/")) ? ["ruleset-variant-sensitive"] : []
+      ]
+    }))
+  });
+  return { clarificationPlan, responseView, baziClaims, answerPlan };
+}
+
+// packages/orchestrator/src/bazi-career-runtime.ts
+var BaziCareerRuntimeInput = external_exports.strictObject({
+  birthInput: external_exports.unknown(),
+  system: external_exports.enum(["bazi"]),
+  depth: external_exports.enum(["brief", "standard", "detailed"])
+}).strict();
+function runBaziCareerRuntime(rawInput, options = {}) {
+  const parsed = BaziCareerRuntimeInput.safeParse(rawInput);
+  if (!parsed.success) {
+    const missingSystem = !isRecord(rawInput) || rawInput.system === void 0;
+    if (missingSystem) {
+      throw new EngineError(
+        "INPUT_VALIDATION_FAILED",
+        "The bazi-career entry requires an explicit --system bazi selection."
+      );
+    }
+    throw new EngineError(
+      isRecord(rawInput) && rawInput.system !== "bazi" ? "RULESET_UNSUPPORTED" : "INPUT_VALIDATION_FAILED",
+      isRecord(rawInput) && rawInput.system !== "bazi" ? "The bazi-career entry serves the admitted bazi system only." : "The bazi-career entry requires depth brief|standard|detailed and a birth-input file."
+    );
+  }
+  const birthInput = parseBirthInput(parsed.data.birthInput);
+  const clarificationRequired = (code) => new EngineError(
+    "CLARIFICATION_REQUIRED",
+    "No career answer was delivered. The request is missing a material setting or the affected claim class is unavailable; resolve it and retry.",
+    { code }
+  );
+  try {
+    const { clarificationPlan, responseView } = projectBaziCareerJourney(
+      {
+        birthInput,
+        planningInput: {
+          topic: "career",
+          requestedDepth: parsed.data.depth,
+          systemScope: "bazi",
+          timeSensitiveClaims: true,
+          // The engine-observed time accuracy decides reliability; the host
+          // can only mirror it through the explicit request.
+          birthTimeReliability: birthInput.timeAccuracy === "unknown" ? "unavailable" : "confirmed",
+          timingRequest: false,
+          targetPeriod: "not-required",
+          rulesetVariantSensitiveClaims: false,
+          rulesetVariant: "not-required"
+        }
+      },
+      { now: options.now ?? Date.now() }
+    );
+    return { clarificationPlan, responseView };
+  } catch (error51) {
+    const code = error51.code;
+    if (typeof code === "string") {
+      throw clarificationRequired(code);
+    }
+    throw error51;
+  }
+}
+function isRecord(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 // packages/synastry/src/bazi-synastry.ts
 function fav(bazi) {
   const s = assessStrength(bazi);
@@ -59605,6 +60593,7 @@ export {
   renderReport,
   renderSvgReport,
   runAnswerPlan,
+  runBaziCareerRuntime,
   runHoroscope,
   runInterpret,
   runNormalize,
