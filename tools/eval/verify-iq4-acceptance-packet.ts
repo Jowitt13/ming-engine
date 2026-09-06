@@ -5,20 +5,20 @@ import { dirname, join } from 'node:path';
 import { canonicalJson, canonicalJsonPretty } from '../../packages/contracts/src/ids.ts';
 import { HOSTS } from '../lib/host-config.ts';
 import { runBaziCareerJourney } from '../../packages/orchestrator/src/bazi-career-journey.ts';
-import { verifyBaziCareerAnswer } from '../../packages/orchestrator/src/bazi-career-answer.ts';
-import { verifyBaziCareerNarrative } from '../../packages/orchestrator/src/bazi-career-narrative.ts';
-import { NarrativeTrace } from '../../packages/contracts/src/answer-claim.ts';
 
 /**
- * IQ-4G acceptance-packet verifier (packet v2). Host acceptance targets the
- * IQ-4F explicit bazi-career runtime entry only: an EXECUTED host record must
- * bind the source commit, the installed candidate ZIP's sha256, the packet
- * input digest, and the sha256 of the captured bazi-career stdout — and that
- * stdout digest must equal the digest the verifier recomputes from the
- * journey itself. Stale generic multi-system demo output, fabricated output,
- * and any other input therefore fail closed. Pending is never pass, and the
- * owner review keeps its own independent pending/approved boundary over the
- * trace-bound answer artifact.
+ * IQ-4H acceptance-packet verifier (packet v3, strict source gate). There is
+ * currently NO source-admitted visible BaZi career claim: every existing text
+ * claim depends on rule content (pattern, useful-god industry matching) that
+ * has not passed source admission. The packet therefore carries no reviewable
+ * narrative, trace, answer draft, or artifact digest at all, and the
+ * reviewed-answer-examples exit criterion is recorded as
+ * BLOCKED_SOURCE_ADMISSION — a governance state that four-host technical
+ * acceptance cannot lift. Host records still bind the IQ-4F bazi-career
+ * evidence cryptographically (source commit, candidate ZIP digest, input
+ * digest, and a stdout digest the verifier recomputes from the journey);
+ * pending is never pass, and any injected legacy artifact, REVIEWED status,
+ * or "IQ-4 passed" claim fails closed.
  *
  * Anti-forgery boundary (deliberate): static completeness and binding only.
  * Authenticity of an EXECUTED record rests on the owner's git-reviewed
@@ -29,54 +29,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..', '..');
 const PACKET_PATH = join(root, 'evals', 'fixtures', 'synthetic', 'iq4-acceptance-packet.json');
 
-const RUBRIC_DIMENSION_IDS = [
-  'support-and-traceability',
-  'mechanism-to-implication',
-  'topic-specificity',
-  'condition-and-caveat-fidelity',
-  'cross-system-integrity',
-  'restraint-and-boundaries',
-  'presentation-cleanliness',
-  'usefulness-without-invention',
-] as const;
-
-const JUDGMENT_VALUES = ['meets', 'needs-review', 'does-not-meet', 'not-applicable'];
-
-const FAILURE_MODE_IDS = new Set([
-  'vague-prose',
-  'term-dump',
-  'unsupported-fact',
-  'mechanism-leap',
-  'cross-system-consensus-fabrication',
-  'repeated-conclusion',
-  'default-footer-clutter',
-  'missing-material-condition',
-  'jargon-without-concrete-implication',
-  'unsupported-life-verdict',
-]);
-
-const BOUNDARY_FINDING_IDS = new Set([
-  'claim-support-resolves',
-  'mechanism-adjacent-to-implication',
-  'topic-scope-respected',
-  'material-caveat-retained',
-  'unrelated-warning-omitted',
-  'cross-system-separation-preserved',
-  'unsupported-life-fact-excluded',
-  'deterministic-verdict-excluded',
-  'default-footer-excluded',
-  'audit-metadata-hidden',
-  'insufficient-evidence-degrades',
-  'automatic-followup-excluded',
-]);
-
 const SHA256_PATTERN = /^sha256:[0-9a-f]{64}$/;
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const COMMIT_PATTERN = /^[0-9a-f]{40}$/;
-const REVIEWER_ID_PATTERN = /^reviewer:anon:[a-f0-9]{16}$/;
-const REVIEW_ID_PATTERN = /^review:synthetic:[a-z0-9][a-z0-9._-]*$/;
-const CASE_ID_PATTERN = /^case:synthetic:career:[a-z0-9][a-z0-9._-]*$/;
-const ARTIFACT_ID_PATTERN = /^artifact:synthetic:[a-z0-9][a-z0-9._-]*$/;
 
 export interface PacketCheck {
   name: string;
@@ -145,102 +100,6 @@ function checkHostRecord(
   return `unknown host record status (pending is never pass)`;
 }
 
-function checkOwnerReviewRecord(record: unknown, expectedArtifactDigest: string): string | null {
-  if (!isRecord(record)) return `owner review record is missing`;
-  for (const key of [
-    'reviewId',
-    'reviewKind',
-    'caseId',
-    'answerArtifactId',
-    'reviewedArtifactDigest',
-    'reviewerId',
-    'reviewRound',
-    'judgments',
-    'failureModeIds',
-    'boundaryFindingIds',
-    'disposition',
-    'sourceReviewIds',
-    'exclusionPolicy',
-  ]) {
-    if (!(key in record)) return `review record is missing ${key}`;
-  }
-  if (typeof record.reviewId !== 'string' || !REVIEW_ID_PATTERN.test(record.reviewId)) {
-    return `reviewId does not follow the review contract pattern`;
-  }
-  if (typeof record.reviewerId !== 'string' || !REVIEWER_ID_PATTERN.test(record.reviewerId)) {
-    return `reviewerId must be an anonymous reviewer id (no names or emails)`;
-  }
-  if (typeof record.caseId !== 'string' || !CASE_ID_PATTERN.test(record.caseId)) {
-    return `caseId does not follow the review contract pattern`;
-  }
-  if (
-    typeof record.answerArtifactId !== 'string' ||
-    !ARTIFACT_ID_PATTERN.test(record.answerArtifactId)
-  ) {
-    return `answerArtifactId does not follow the review contract pattern`;
-  }
-  if (
-    typeof record.reviewedArtifactDigest !== 'string' ||
-    !SHA256_PATTERN.test(record.reviewedArtifactDigest)
-  ) {
-    return `reviewedArtifactDigest must be sha256`;
-  }
-  // Anti-forgery binding: the review must be over the packet's own embedded
-  // answer artifact, not some unreachable text.
-  if (record.reviewedArtifactDigest !== expectedArtifactDigest) {
-    return `reviewedArtifactDigest does not match the packet's embedded answer artifact`;
-  }
-  if (record.reviewKind !== 'independent' && record.reviewKind !== 'reconciliation') {
-    return `reviewKind is outside the contract vocabulary`;
-  }
-  if (!Array.isArray(record.judgments) || record.judgments.length !== 8) {
-    return `judgments must contain exactly the eight rubric dimensions`;
-  }
-  for (const [index, entry] of record.judgments.entries()) {
-    if (!isRecord(entry)) return `judgment ${index} is not an object`;
-    if (entry.dimensionId !== RUBRIC_DIMENSION_IDS[index]) {
-      return `judgment ${index} is not the rubric-ordered dimension`;
-    }
-    if (!JUDGMENT_VALUES.includes(entry.judgment as string)) {
-      return `judgment ${index} uses a value outside the contract vocabulary`;
-    }
-  }
-  const checkIdSet = (value: unknown, set: Set<string>): string | null => {
-    if (!Array.isArray(value)) return `expected an array of contract ids`;
-    for (const id of value) {
-      if (typeof id !== 'string' || !set.has(id)) return `id outside the contract vocabulary`;
-    }
-    return null;
-  };
-  const failureIssue = checkIdSet(record.failureModeIds, FAILURE_MODE_IDS);
-  if (failureIssue) return failureIssue;
-  const boundaryIssue = checkIdSet(record.boundaryFindingIds, BOUNDARY_FINDING_IDS);
-  if (boundaryIssue) return boundaryIssue;
-  if (
-    record.disposition !== 'accept' &&
-    record.disposition !== 'revise' &&
-    record.disposition !== 'reject' &&
-    record.disposition !== 'reconciliation-required'
-  ) {
-    return `disposition is outside the contract vocabulary`;
-  }
-  if (!Array.isArray(record.sourceReviewIds)) return `sourceReviewIds must be an array`;
-  if (record.reviewKind === 'independent' && record.sourceReviewIds.length > 0) {
-    return `independent reviews cite no other reviews`;
-  }
-  if (record.reviewKind === 'reconciliation' && record.sourceReviewIds.length < 2) {
-    return `reconciliation reviews cite at least two distinct reviews`;
-  }
-  if (
-    !Array.isArray(record.exclusionPolicy) ||
-    record.exclusionPolicy.length === 0 ||
-    !(record.exclusionPolicy as unknown[]).every((id) => typeof id === 'string')
-  ) {
-    return `exclusionPolicy must be a non-empty array of ids`;
-  }
-  return null;
-}
-
 export function verifyIq4AcceptancePacket(packet: unknown): {
   ok: boolean;
   checks: PacketCheck[];
@@ -258,7 +117,7 @@ export function verifyIq4AcceptancePacket(packet: unknown): {
     add('packet is a JSON object', false);
     return { ok: false, checks };
   }
-  add('packet id is iq4-acceptance-packet/v2', packet.packetId === 'iq4-acceptance-packet/v2');
+  add('packet id is iq4-acceptance-packet/v3', packet.packetId === 'iq4-acceptance-packet/v3');
 
   // IQ-4F explicit runtime entry binding: the acceptance target is the
   // bazi-career command at a pinned source commit over the packet input.
@@ -288,11 +147,9 @@ export function verifyIq4AcceptancePacket(packet: unknown): {
     add('runtime entry pins the explicit bazi-career command and source commit', false);
   }
 
-  // Full-chain link: recompute the journey and verify the embedded answer and
-  // traces against the recomputed evidence; also derive the expected
-  // bazi-career stdout digest that EXECUTED host records must bind.
-  let answerVerified = false;
-  let narrativeVerified = false;
+  // Full-chain link: recompute the journey to derive the expected
+  // bazi-career stdout digest that EXECUTED host records must bind. Reviewable
+  // career artifacts are forbidden entirely while source admission is blocked.
   let claimsMatch = false;
   let journeyRecomputed = false;
   let expectedStdoutDigest = '';
@@ -310,32 +167,25 @@ export function verifyIq4AcceptancePacket(packet: unknown): {
         `${canonicalJsonPretty({ ok: true, clarificationPlan: journey.clarificationPlan, responseView: journey.responseView })}\n`,
       )
       .digest('hex')}`;
-    narrativeVerified = verifyBaziCareerNarrative(
-      packet.traces as readonly unknown[],
-      packet.journeyInput,
-      { now: packet.fixedNow as number },
-    ).ok;
-    answerVerified = verifyBaziCareerAnswer(
-      packet.answerDraft,
-      packet.traces as readonly unknown[],
-      packet.journeyInput,
-      { now: packet.fixedNow as number },
-    ).ok;
   } catch {
     claimsMatch = false;
-    narrativeVerified = false;
-    answerVerified = false;
     journeyRecomputed = false;
   }
   add('embedded journey recomputes to the expected single-system view', claimsMatch);
   add('expected bazi-career stdout digest derived from the journey', journeyRecomputed);
-  add('embedded traces link every claim and caveat of the journey', narrativeVerified);
-  add('embedded answer draft passes journey-level answer verification', answerVerified);
 
-  const tracesOk =
-    Array.isArray(packet.traces) &&
-    packet.traces.every((trace) => NarrativeTrace.safeParse(trace).success);
-  add('embedded paragraph traces follow narrative-trace/v1', tracesOk);
+  // Strict source gate: no reviewable career artifact of any kind may ride
+  // along while the reviewed-answer-examples criterion is source-blocked.
+  // The check is structural (artifact presence), not a keyword blacklist.
+  const carriesReviewableArtifacts =
+    packet.traces !== undefined ||
+    packet.answerDraft !== undefined ||
+    packet.answerArtifactDigest !== undefined ||
+    packet.reviewedArtifactDigest !== undefined;
+  add(
+    'packet carries no reviewable career artifacts while source admission is blocked',
+    !carriesReviewableArtifacts,
+  );
 
   // Host acceptance records: dynamically matched against the real host
   // configuration; pending is never pass, EXECUTED requires full evidence.
@@ -373,31 +223,42 @@ export function verifyIq4AcceptancePacket(packet: unknown): {
     }
   }
 
-  // Owner review: pending with a null record; REVIEWED requires a complete,
-  // contract-shaped record. A forged approval without a record fails closed.
+  // Owner review: the source block is a governance state with a single legal
+  // value. REVIEWED, pending, or any other status fails closed, and no review
+  // record may exist because there is no admissible reviewable artifact.
   const ownerReview = packet.ownerReview;
   if (!isRecord(ownerReview)) {
     add('owner review section present', false);
   } else {
     add(
-      'owner review status is within the recorded vocabulary',
-      ownerReview.status === 'NOT_EXECUTED' || ownerReview.status === 'REVIEWED',
+      'owner review records the BLOCKED_SOURCE_ADMISSION governance state',
+      ownerReview.status === 'BLOCKED_SOURCE_ADMISSION',
+      ownerReview.status === 'BLOCKED_SOURCE_ADMISSION'
+        ? undefined
+        : 'only BLOCKED_SOURCE_ADMISSION is expressible; REVIEWED or pending statuses fail closed',
     );
-    if (ownerReview.status === 'NOT_EXECUTED') {
-      add('pending owner review carries no review record', ownerReview.reviewRecord === null);
-    } else if (ownerReview.status === 'REVIEWED') {
-      const expectedArtifactDigest = `sha256:${createHash('sha256')
-        .update(canonicalJson(packet.answerDraft))
-        .digest('hex')}`;
-      const detail = checkOwnerReviewRecord(ownerReview.reviewRecord, expectedArtifactDigest);
-      add(
-        'owner review record follows answer-quality-review/v1',
-        detail === null,
-        detail ?? undefined,
-      );
-    } else {
-      add('owner review status is outside the recorded vocabulary', false);
-    }
+    add(
+      'owner review vocabulary cannot express approval while blocked',
+      Array.isArray(ownerReview.statusVocabulary) &&
+        ownerReview.statusVocabulary.length === 1 &&
+        ownerReview.statusVocabulary[0] === 'BLOCKED_SOURCE_ADMISSION',
+    );
+    add('blocked owner review carries no review record', ownerReview.reviewRecord === null);
+  }
+
+  // IQ-4 exit state: machine-verifiable and never passable through host runs.
+  const iq4Exit = packet.iq4Exit;
+  if (!isRecord(iq4Exit)) {
+    add('iq4 exit state present', false);
+  } else {
+    add(
+      'iq4 exit records BLOCKED_SOURCE_ADMISSION for reviewed-answer-examples',
+      iq4Exit.status === 'BLOCKED_SOURCE_ADMISSION' &&
+        iq4Exit.criterion === 'reviewed-answer-examples',
+      iq4Exit.status === 'BLOCKED_SOURCE_ADMISSION'
+        ? undefined
+        : 'injected "IQ-4 passed" or REVIEWED exit states fail closed',
+    );
   }
 
   // Privacy: no email-shaped strings anywhere in the packet.

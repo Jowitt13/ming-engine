@@ -1,7 +1,7 @@
 {
-  "packetId": "iq4-acceptance-packet/v2",
+  "packetId": "iq4-acceptance-packet/v3",
   "fixtureKind": "synthetic-technical",
-  "migrationNote": "v2 aligns host acceptance with the IQ-4F explicit bazi-career runtime entry. The v1 generic natural-language demo and its evidence are retired: all pre-v2 host evidence is invalid for IQ-4 and was never imported. Owner review still targets the trace-bound synthetic answer artifact below.",
+  "migrationNote": "v3 applies the owner's strict source-gate ruling: the packet no longer carries any reviewable BaZi career narrative, NarrativeTrace, answer draft, or artifact digest, because every existing text claim depends on rule content that is not source-admitted (pattern / useful-god industry matching). The retired v1/v2 artifacts are invalid for IQ-4 and were never imported. Host acceptance (the explicit bazi-career entry) remains separate technical evidence and never lifts the reviewed-answer-examples block.",
   "syntheticNotice": "示例·虚构人物，非真实个人信息；本包全部数据为确定性合成 fixture，不包含真实出生资料、职业经历、原始 prompt 或可识别信息。",
   "journeyInput": {
     "birthInput": {
@@ -43,93 +43,17 @@
     "inputDigest": "sha256:a684a27ed7bfa4d5a5770afe806b1c391dc63318ae0862af3c84f77adb40952d",
     "note": "The captured stdout of this exact command is the host evidence. Its sha256 must equal the digest the verifier recomputes from the journey; generic multi-system demo output is not acceptance evidence. inputDigest binds the canonical synthetic birth input the host must pass unchanged."
   },
-  "traces": [
-    {
-      "contractVersion": "narrative-trace/v1",
-      "traceId": "narrative-trace:paragraph-1",
-      "paragraphId": "paragraph-1",
-      "topic": "career",
-      "approvedClaimIds": ["approved-claim:fact-7"],
-      "factRefs": ["fact-7"],
-      "mechanismRefs": ["bazi.pillars.*.tenGod", "bazi-rule/pattern"],
-      "constraintRefs": [{ "kind": "caveat", "index": 0 }],
-      "invalidationCauses": [
-        "input-chart",
-        "settings",
-        "engine-provider",
-        "ruleset",
-        "source-profile",
-        "topic-lens",
-        "language-narrator"
-      ],
-      "visibleText": "这个盘的官杀比较集中，通常意味着规则、责任和体制类的工作主题更容易落在你身上。官杀说的是事业倾向的结构，不是职业预言；它更像一个背景条件：当你接的任务边界清楚、有明确的交付标准时，这类结构往往更容易发挥。可以把手头的事按「规则清晰」和「需要自己定规则」分成两列，各写三件具体的事，看看哪一列做完更有成就感，再决定下一段时间往管理协调还是专业深耕多投入。",
-      "transient": true,
-      "regenerable": true
-    },
-    {
-      "contractVersion": "narrative-trace/v1",
-      "traceId": "narrative-trace:paragraph-2",
-      "paragraphId": "paragraph-2",
-      "topic": "career",
-      "approvedClaimIds": ["approved-claim:fact-96"],
-      "factRefs": ["fact-96"],
-      "mechanismRefs": ["bazi-rule/industry/wu-xing"],
-      "constraintRefs": [{ "kind": "caveat", "index": 3 }],
-      "invalidationCauses": [
-        "input-chart",
-        "settings",
-        "engine-provider",
-        "ruleset",
-        "source-profile",
-        "topic-lens",
-        "language-narrator"
-      ],
-      "visibleText": "行业大类上，规则按喜用五行给出的参考方向，更适合当作筛选条件而不是答案：它不决定你能做什么，也不替你预测行情。具体可以这样用——列出你接触过的三到五个领域，把和参考方向重合的挑出来，再各自找一个真实在做的人聊半小时，问问他们日常一半时间在处理什么；聊完之后哪一行让你还想继续追问，就先投一份简历或接一个小项目试试，用真实反馈修正方向。",
-      "transient": true,
-      "regenerable": true
-    }
-  ],
-  "answerDraft": {
-    "contractVersion": "reading-draft/v2",
-    "topic": "career",
-    "sections": [
-      {
-        "id": "career",
-        "heading": "",
-        "paragraphs": [
-          {
-            "text": "这个盘的官杀比较集中，通常意味着规则、责任和体制类的工作主题更容易落在你身上。官杀说的是事业倾向的结构，不是职业预言；它更像一个背景条件：当你接的任务边界清楚、有明确的交付标准时，这类结构往往更容易发挥。可以把手头的事按「规则清晰」和「需要自己定规则」分成两列，各写三件具体的事，看看哪一列做完更有成就感，再决定下一段时间往管理协调还是专业深耕多投入。",
-            "sourceFactIds": ["fact-7"],
-            "constraintRefs": [{ "kind": "caveat", "index": 0 }]
-          },
-          {
-            "text": "行业大类上，规则按喜用五行给出的参考方向，更适合当作筛选条件而不是答案：它不决定你能做什么，也不替你预测行情。具体可以这样用——列出你接触过的三到五个领域，把和参考方向重合的挑出来，再各自找一个真实在做的人聊半小时，问问他们日常一半时间在处理什么；聊完之后哪一行让你还想继续追问，就先投一份简历或接一个小项目试试，用真实反馈修正方向。",
-            "sourceFactIds": ["fact-96"],
-            "constraintRefs": [{ "kind": "caveat", "index": 1 }]
-          },
-          {
-            "text": "需要说明：当前时间按真太阳时近似处理，涉及时辰的结论可能有小幅变化；如能提供更精确的出生时间，时柱相关的部分可以重新计算后再看。",
-            "sourceFactIds": [],
-            "constraintRefs": [
-              { "kind": "warning", "index": 0 },
-              { "kind": "warning", "index": 1 }
-            ]
-          }
-        ]
-      }
-    ],
-    "caveatsExpressed": [
-      "官杀仅示事业/责任倾向的结构，非职业预言。",
-      "行业为参考方向，非唯一；需结合兴趣与现实。"
-    ],
-    "warningsDisclosed": ["SOLAR_TIME_APPROXIMATE"]
+  "iq4Exit": {
+    "status": "BLOCKED_SOURCE_ADMISSION",
+    "criterion": "reviewed-answer-examples",
+    "reason": "当前不存在任何 source-admitted 的可见 BaZi career claim：现有文本 claim 依赖格局（bazi-rule/pattern）与喜用神行业匹配（bazi-rule/industry/wu-xing）等未经来源准入的规则内容，运行时入口也因此只输出结构化记录。reviewed-answer-examples 退出条件被来源门禁阻断；四宿主技术验收与本状态无关，不能解除它。解除需要 owner 的来源准入裁决及其后的独立准入切片，而非对任何现有答案的评审。"
   },
   "hostAcceptance": {
     "status": "NOT_EXECUTED",
     "statusVocabulary": ["NOT_EXECUTED", "EXECUTED"],
     "packageCommand": "pnpm run package:hosts",
     "verifyCommand": "pnpm run verify:hosts",
-    "evidenceRule": "EXECUTED requires, per host: sourceCommit equal to runtimeEntry.sourceCommit, candidateSha256 of the exact installed ZIP copied from the candidate SHA256SUMS.txt, inputDigest equal to runtimeEntry.inputDigest, outputDigest equal to the verifier-recomputed stdout digest of the bazi-career command, exitCode 0, an ISO date, and notes. Rebuilding candidates invalidates earlier host evidence (release checklist A4). The retired generic natural-language demo is not acceptance evidence.",
+    "evidenceRule": "EXECUTED requires, per host: sourceCommit equal to runtimeEntry.sourceCommit, candidateSha256 of the exact installed ZIP copied from the candidate SHA256SUMS.txt, inputDigest equal to runtimeEntry.inputDigest, outputDigest equal to the verifier-recomputed stdout digest of the bazi-career command, exitCode 0, an ISO date, and notes. Rebuilding candidates invalidates earlier host evidence (release checklist A4). Host acceptance is independent technical evidence: even when all four hosts are EXECUTED, the packet's iq4Exit stays BLOCKED_SOURCE_ADMISSION and the reviewed-answer-examples criterion remains blocked.",
     "reviewQuestions": [
       "bazi-career 是否退出码 0 且输出 digest 与重算期望一致",
       "输出是否只含 clarification-plan/v1 + response-view/v1 且 system 为 bazi",
@@ -196,8 +120,10 @@
     ]
   },
   "ownerReview": {
-    "status": "NOT_EXECUTED",
-    "reviewContract": "loom:eval/answer-quality-review/v1",
+    "status": "BLOCKED_SOURCE_ADMISSION",
+    "statusVocabulary": ["BLOCKED_SOURCE_ADMISSION"],
+    "blockedCriterion": "reviewed-answer-examples",
+    "reason": "没有可用于可见 BaZi career narrative 的 source-admitted claim；在 owner 完成来源准入裁决并出现被准入的文本 claim 之前，本评审不存在可评审对象。此状态是治理裁决记录，不是待人工补签的 pending，也不因四宿主技术验收完成而改变。",
     "questions": [
       "支持链是否完整（claim/view/trace/answer 可互相解析）",
       "material caveat 是否就地保留、未被挪到底部或隐藏",
