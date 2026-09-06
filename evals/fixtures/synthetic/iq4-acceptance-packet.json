@@ -1,6 +1,7 @@
 {
-  "packetId": "iq4-acceptance-packet/v1",
+  "packetId": "iq4-acceptance-packet/v2",
   "fixtureKind": "synthetic-technical",
+  "migrationNote": "v2 aligns host acceptance with the IQ-4F explicit bazi-career runtime entry. The v1 generic natural-language demo and its evidence are retired: all pre-v2 host evidence is invalid for IQ-4 and was never imported. Owner review still targets the trace-bound synthetic answer artifact below.",
   "syntheticNotice": "示例·虚构人物，非真实个人信息；本包全部数据为确定性合成 fixture，不包含真实出生资料、职业经历、原始 prompt 或可识别信息。",
   "journeyInput": {
     "birthInput": {
@@ -32,6 +33,16 @@
   },
   "fixedNow": 1767225600000,
   "expectedViewClaimIds": ["approved-claim:fact-7", "approved-claim:fact-96"],
+  "runtimeEntry": {
+    "sourceCommit": "84f51027826ba138dcf219136a606653aa02d15e",
+    "command": "node scripts/loom-chart.mjs bazi-career --input-file bazi-career-input.json --system bazi --depth standard --now 2026-01-01T00:00:00Z",
+    "depth": "standard",
+    "system": "bazi",
+    "nowISO": "2026-01-01T00:00:00Z",
+    "expectedExitCode": 0,
+    "inputDigest": "sha256:a684a27ed7bfa4d5a5770afe806b1c391dc63318ae0862af3c84f77adb40952d",
+    "note": "The captured stdout of this exact command is the host evidence. Its sha256 must equal the digest the verifier recomputes from the journey; generic multi-system demo output is not acceptance evidence. inputDigest binds the canonical synthetic birth input the host must pass unchanged."
+  },
   "traces": [
     {
       "contractVersion": "narrative-trace/v1",
@@ -118,40 +129,69 @@
     "statusVocabulary": ["NOT_EXECUTED", "EXECUTED"],
     "packageCommand": "pnpm run package:hosts",
     "verifyCommand": "pnpm run verify:hosts",
+    "evidenceRule": "EXECUTED requires, per host: sourceCommit equal to runtimeEntry.sourceCommit, candidateSha256 of the exact installed ZIP copied from the candidate SHA256SUMS.txt, inputDigest equal to runtimeEntry.inputDigest, outputDigest equal to the verifier-recomputed stdout digest of the bazi-career command, exitCode 0, an ISO date, and notes. Rebuilding candidates invalidates earlier host evidence (release checklist A4). The retired generic natural-language demo is not acceptance evidence.",
     "reviewQuestions": [
-      "安装/doctor/verify 是否全部成功且输出与 candidate 包一致",
-      "engine self-check 与 interpret 演示是否可复现、无网络依赖",
-      "宿主是否只呈现技能说明与确定性输出，无额外模型层编排偏差",
-      "卸载/更新提示是否与实际宿主行为一致"
+      "bazi-career 是否退出码 0 且输出 digest 与重算期望一致",
+      "输出是否只含 clarification-plan/v1 + response-view/v1 且 system 为 bazi",
+      "安装的 candidate ZIP SHA-256 是否与 SHA256SUMS.txt 一致、sourceCommit 是否匹配",
+      "宿主是否只呈现技能说明与确定性输出，无额外模型层编排偏差"
     ],
     "records": [
       {
         "hostId": "codex",
         "status": "NOT_EXECUTED",
         "engineSelfCheck": "node scripts/loom-chart.mjs verify",
-        "userDemoPrompt": "男，公历 1990-06-15 14:20（时间准确，示例·虚构人物，非真实个人信息），出生地 示例城市，时区 Asia/Shanghai，纬度 30.00、经度 120.00，帮我看事业。",
-        "result": { "exitCode": null, "outputDigest": null, "executedAtISO": null, "notes": "" }
+        "result": {
+          "exitCode": null,
+          "outputDigest": null,
+          "executedAtISO": null,
+          "notes": "",
+          "sourceCommit": null,
+          "candidateSha256": null,
+          "inputDigest": null
+        }
       },
       {
         "hostId": "qoder",
         "status": "NOT_EXECUTED",
         "engineSelfCheck": "node scripts/loom-chart.mjs verify",
-        "userDemoPrompt": "男，公历 1990-06-15 14:20（时间准确，示例·虚构人物，非真实个人信息），出生地 示例城市，时区 Asia/Shanghai，纬度 30.00、经度 120.00，帮我看事业。",
-        "result": { "exitCode": null, "outputDigest": null, "executedAtISO": null, "notes": "" }
+        "result": {
+          "exitCode": null,
+          "outputDigest": null,
+          "executedAtISO": null,
+          "notes": "",
+          "sourceCommit": null,
+          "candidateSha256": null,
+          "inputDigest": null
+        }
       },
       {
         "hostId": "workbuddy",
         "status": "NOT_EXECUTED",
         "engineSelfCheck": "node scripts/loom-chart.mjs verify",
-        "userDemoPrompt": "男，公历 1990-06-15 14:20（时间准确，示例·虚构人物，非真实个人信息），出生地 示例城市，时区 Asia/Shanghai，纬度 30.00、经度 120.00，帮我看事业。",
-        "result": { "exitCode": null, "outputDigest": null, "executedAtISO": null, "notes": "" }
+        "result": {
+          "exitCode": null,
+          "outputDigest": null,
+          "executedAtISO": null,
+          "notes": "",
+          "sourceCommit": null,
+          "candidateSha256": null,
+          "inputDigest": null
+        }
       },
       {
         "hostId": "doubao",
         "status": "NOT_EXECUTED",
         "engineSelfCheck": "node scripts/loom-chart.mjs verify",
-        "userDemoPrompt": "男，公历 1990-06-15 14:20（时间准确，示例·虚构人物，非真实个人信息），出生地 示例城市，时区 Asia/Shanghai，纬度 30.00、经度 120.00，帮我看事业。",
-        "result": { "exitCode": null, "outputDigest": null, "executedAtISO": null, "notes": "" }
+        "result": {
+          "exitCode": null,
+          "outputDigest": null,
+          "executedAtISO": null,
+          "notes": "",
+          "sourceCommit": null,
+          "candidateSha256": null,
+          "inputDigest": null
+        }
       }
     ]
   },
