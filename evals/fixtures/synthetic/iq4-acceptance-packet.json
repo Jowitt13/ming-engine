@@ -1,0 +1,169 @@
+{
+  "packetId": "iq4-acceptance-packet/v1",
+  "fixtureKind": "synthetic-technical",
+  "syntheticNotice": "示例·虚构人物，非真实个人信息；本包全部数据为确定性合成 fixture，不包含真实出生资料、职业经历、原始 prompt 或可识别信息。",
+  "journeyInput": {
+    "birthInput": {
+      "calendar": "gregorian",
+      "localDate": "1991-02-03",
+      "localTime": "04:05:06",
+      "timeAccuracy": "exact",
+      "timezone": "Pacific/Port_Moresby",
+      "location": {
+        "latitude": 12.345678,
+        "longitude": 98.765432,
+        "source": "user",
+        "displayName": "Synthetic IQ-4 acceptance location sentinel"
+      },
+      "ruleGender": "female",
+      "settings": { "systems": ["bazi"] }
+    },
+    "planningInput": {
+      "topic": "career",
+      "requestedDepth": "standard",
+      "systemScope": "bazi",
+      "timeSensitiveClaims": true,
+      "birthTimeReliability": "confirmed",
+      "timingRequest": false,
+      "targetPeriod": "not-required",
+      "rulesetVariantSensitiveClaims": false,
+      "rulesetVariant": "not-required"
+    }
+  },
+  "fixedNow": 1767225600000,
+  "expectedViewClaimIds": ["approved-claim:fact-7", "approved-claim:fact-96"],
+  "traces": [
+    {
+      "contractVersion": "narrative-trace/v1",
+      "traceId": "narrative-trace:paragraph-1",
+      "paragraphId": "paragraph-1",
+      "topic": "career",
+      "approvedClaimIds": ["approved-claim:fact-7"],
+      "factRefs": ["fact-7"],
+      "mechanismRefs": ["bazi.pillars.*.tenGod", "bazi-rule/pattern"],
+      "constraintRefs": [{ "kind": "caveat", "index": 0 }],
+      "invalidationCauses": [
+        "input-chart",
+        "settings",
+        "engine-provider",
+        "ruleset",
+        "source-profile",
+        "topic-lens",
+        "language-narrator"
+      ],
+      "visibleText": "这个盘的官杀比较集中，通常意味着规则、责任和体制类的工作主题更容易落在你身上。官杀说的是事业倾向的结构，不是职业预言；它更像一个背景条件：当你接的任务边界清楚、有明确的交付标准时，这类结构往往更容易发挥。可以把手头的事按「规则清晰」和「需要自己定规则」分成两列，各写三件具体的事，看看哪一列做完更有成就感，再决定下一段时间往管理协调还是专业深耕多投入。",
+      "transient": true,
+      "regenerable": true
+    },
+    {
+      "contractVersion": "narrative-trace/v1",
+      "traceId": "narrative-trace:paragraph-2",
+      "paragraphId": "paragraph-2",
+      "topic": "career",
+      "approvedClaimIds": ["approved-claim:fact-96"],
+      "factRefs": ["fact-96"],
+      "mechanismRefs": ["bazi-rule/industry/wu-xing"],
+      "constraintRefs": [{ "kind": "caveat", "index": 3 }],
+      "invalidationCauses": [
+        "input-chart",
+        "settings",
+        "engine-provider",
+        "ruleset",
+        "source-profile",
+        "topic-lens",
+        "language-narrator"
+      ],
+      "visibleText": "行业大类上，规则按喜用五行给出的参考方向，更适合当作筛选条件而不是答案：它不决定你能做什么，也不替你预测行情。具体可以这样用——列出你接触过的三到五个领域，把和参考方向重合的挑出来，再各自找一个真实在做的人聊半小时，问问他们日常一半时间在处理什么；聊完之后哪一行让你还想继续追问，就先投一份简历或接一个小项目试试，用真实反馈修正方向。",
+      "transient": true,
+      "regenerable": true
+    }
+  ],
+  "answerDraft": {
+    "contractVersion": "reading-draft/v2",
+    "topic": "career",
+    "sections": [
+      {
+        "id": "career",
+        "heading": "",
+        "paragraphs": [
+          {
+            "text": "这个盘的官杀比较集中，通常意味着规则、责任和体制类的工作主题更容易落在你身上。官杀说的是事业倾向的结构，不是职业预言；它更像一个背景条件：当你接的任务边界清楚、有明确的交付标准时，这类结构往往更容易发挥。可以把手头的事按「规则清晰」和「需要自己定规则」分成两列，各写三件具体的事，看看哪一列做完更有成就感，再决定下一段时间往管理协调还是专业深耕多投入。",
+            "sourceFactIds": ["fact-7"],
+            "constraintRefs": [{ "kind": "caveat", "index": 0 }]
+          },
+          {
+            "text": "行业大类上，规则按喜用五行给出的参考方向，更适合当作筛选条件而不是答案：它不决定你能做什么，也不替你预测行情。具体可以这样用——列出你接触过的三到五个领域，把和参考方向重合的挑出来，再各自找一个真实在做的人聊半小时，问问他们日常一半时间在处理什么；聊完之后哪一行让你还想继续追问，就先投一份简历或接一个小项目试试，用真实反馈修正方向。",
+            "sourceFactIds": ["fact-96"],
+            "constraintRefs": [{ "kind": "caveat", "index": 1 }]
+          },
+          {
+            "text": "需要说明：当前时间按真太阳时近似处理，涉及时辰的结论可能有小幅变化；如能提供更精确的出生时间，时柱相关的部分可以重新计算后再看。",
+            "sourceFactIds": [],
+            "constraintRefs": [
+              { "kind": "warning", "index": 0 },
+              { "kind": "warning", "index": 1 }
+            ]
+          }
+        ]
+      }
+    ],
+    "caveatsExpressed": [
+      "官杀仅示事业/责任倾向的结构，非职业预言。",
+      "行业为参考方向，非唯一；需结合兴趣与现实。"
+    ],
+    "warningsDisclosed": ["SOLAR_TIME_APPROXIMATE"]
+  },
+  "hostAcceptance": {
+    "status": "NOT_EXECUTED",
+    "statusVocabulary": ["NOT_EXECUTED", "EXECUTED"],
+    "packageCommand": "pnpm run package:hosts",
+    "verifyCommand": "pnpm run verify:hosts",
+    "reviewQuestions": [
+      "安装/doctor/verify 是否全部成功且输出与 candidate 包一致",
+      "engine self-check 与 interpret 演示是否可复现、无网络依赖",
+      "宿主是否只呈现技能说明与确定性输出，无额外模型层编排偏差",
+      "卸载/更新提示是否与实际宿主行为一致"
+    ],
+    "records": [
+      {
+        "hostId": "codex",
+        "status": "NOT_EXECUTED",
+        "engineSelfCheck": "node scripts/loom-chart.mjs verify",
+        "userDemoPrompt": "男，公历 1990-06-15 14:20（时间准确，示例·虚构人物，非真实个人信息），出生地 示例城市，时区 Asia/Shanghai，纬度 30.00、经度 120.00，帮我看事业。",
+        "result": { "exitCode": null, "outputDigest": null, "executedAtISO": null, "notes": "" }
+      },
+      {
+        "hostId": "qoder",
+        "status": "NOT_EXECUTED",
+        "engineSelfCheck": "node scripts/loom-chart.mjs verify",
+        "userDemoPrompt": "男，公历 1990-06-15 14:20（时间准确，示例·虚构人物，非真实个人信息），出生地 示例城市，时区 Asia/Shanghai，纬度 30.00、经度 120.00，帮我看事业。",
+        "result": { "exitCode": null, "outputDigest": null, "executedAtISO": null, "notes": "" }
+      },
+      {
+        "hostId": "workbuddy",
+        "status": "NOT_EXECUTED",
+        "engineSelfCheck": "node scripts/loom-chart.mjs verify",
+        "userDemoPrompt": "男，公历 1990-06-15 14:20（时间准确，示例·虚构人物，非真实个人信息），出生地 示例城市，时区 Asia/Shanghai，纬度 30.00、经度 120.00，帮我看事业。",
+        "result": { "exitCode": null, "outputDigest": null, "executedAtISO": null, "notes": "" }
+      },
+      {
+        "hostId": "doubao",
+        "status": "NOT_EXECUTED",
+        "engineSelfCheck": "node scripts/loom-chart.mjs verify",
+        "userDemoPrompt": "男，公历 1990-06-15 14:20（时间准确，示例·虚构人物，非真实个人信息），出生地 示例城市，时区 Asia/Shanghai，纬度 30.00、经度 120.00，帮我看事业。",
+        "result": { "exitCode": null, "outputDigest": null, "executedAtISO": null, "notes": "" }
+      }
+    ]
+  },
+  "ownerReview": {
+    "status": "NOT_EXECUTED",
+    "reviewContract": "loom:eval/answer-quality-review/v1",
+    "questions": [
+      "支持链是否完整（claim/view/trace/answer 可互相解析）",
+      "material caveat 是否就地保留、未被挪到底部或隐藏",
+      "是否存在越权职业断言（必然性、收入/晋升/求职成功预测、替用户做辞职或创业决定）",
+      "是否存在杂乱底部模板块（敏感项校对/引擎警告/专业依据/声明）"
+    ],
+    "reviewRecord": null
+  }
+}
