@@ -154,6 +154,7 @@ async function main() {
     runHoroscope,
     runInterpret,
     runAnswerPlan,
+    runBaziCareerRuntime,
     runSynastry,
     validateAnswer,
     parseValidateAnswerInputBounded,
@@ -270,6 +271,17 @@ async function main() {
         writePublicOutput(args, canonicalJsonPretty({ ok: true, publicResult, answerPlan }));
         return;
       }
+      case 'bazi-career': {
+        // system/depth are validated inside the engine entry so a missing or
+        // non-bazi selection fails closed with its proper public code.
+        const raw = readPublicJsonOrThrow(requireArg(args, 'input-file'), EngineError);
+        const { clarificationPlan, responseView } = runBaziCareerRuntime(
+          { birthInput: raw, system: args.system, depth: args.depth },
+          { now: parseNow(typeof args.now === 'string' ? args.now : undefined) },
+        );
+        writePublicOutput(args, canonicalJsonPretty({ ok: true, clarificationPlan, responseView }));
+        return;
+      }
       case 'synastry': {
         const raw = readJsonFile(requireArg(args, 'input-file'));
         let parsed;
@@ -381,9 +393,9 @@ async function main() {
     }
   } catch (err) {
     const engineError = toEngineError(err);
-    if (command === 'answer-plan') {
+    if (command === 'answer-plan' || command === 'bazi-career') {
       process.stdout.write(`${canonicalJsonPretty(publicErrorEnvelope(engineError))}\n`);
-      process.stderr.write(`answer-plan failed [${engineError.code}]\n`);
+      process.stderr.write(`${command} failed [${engineError.code}]\n`);
       process.exit(engineError.exitCode);
       return;
     }
@@ -469,6 +481,8 @@ function publicErrorEnvelope(engineError) {
     PROVIDER_FAILED: 'A calculation provider could not complete the request.',
     RULESET_UNSUPPORTED: 'The requested ruleset is not supported.',
     LUNAR_CONVERSION_UNAVAILABLE: 'The supplied lunar-calendar input could not be converted.',
+    CLARIFICATION_REQUIRED:
+      'No career answer was delivered. Provide the missing material setting or confirm availability, then retry.',
     INTERNAL_ERROR: 'The answer plan could not be prepared.',
   };
   return {

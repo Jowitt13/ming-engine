@@ -14,6 +14,11 @@ export type { CalculateOptions, NormalizeResult, HoroscopeOptions } from './calc
 export { runAnswerPlan, runInterpret } from './interpret.ts';
 export type { AnswerPlanOptions, InterpretOptions } from './interpret.ts';
 
+// IQ-4F explicit single-system (bazi) career runtime entry. Serves only the
+// frozen versioned records; the generic answer-plan verb above stays the
+// unspecified-system default.
+export { runBaziCareerRuntime } from './bazi-career-runtime.ts';
+
 // Output-layer term firewall for produced Channel B reports (ADR 0011). Pure text util.
 export { lintReading, READING_TERMS, JARGON_STRONG, JARGON_SOFT } from '@loom/interpret';
 export type {

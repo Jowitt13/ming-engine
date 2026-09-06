@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -173,6 +173,97 @@ try {
     'answer-plan requires an explicit bounded topic instead of widening scope',
     missingTopic.code !== 0 && /"code":\s*"INPUT_VALIDATION_FAILED"/.test(missingTopic.stdout),
   );
+
+  // IQ-4F: the explicit single-system bazi-career runtime entry.
+  const baziCareerArgs = [
+    'scripts/loom-chart.mjs',
+    'bazi-career',
+    '--input-file',
+    'scripts/fixtures/smoke.json',
+    '--system',
+    'bazi',
+    '--depth',
+    'standard',
+    '--now',
+    FIXED_NOW,
+  ];
+  const baziCareerTemp = runNode(tempSkill, baziCareerArgs);
+  record('bazi-career runs in clean dir (exit 0)', baziCareerTemp.code === 0);
+  let baziCareerSystem = '';
+  try {
+    baziCareerSystem =
+      (JSON.parse(baziCareerTemp.stdout) as { responseView?: { system?: string } }).responseView
+        ?.system ?? '';
+  } catch {
+    // keep empty; the record below reports it
+  }
+  record(
+    'bazi-career emits the response-view record for system bazi only',
+    baziCareerSystem === 'bazi',
+  );
+  record(
+    'bazi-career output identical: source CLI vs isolated Skill',
+    baziCareerTemp.stdout.length > 0 &&
+      baziCareerTemp.stdout === runNode(srcSkill, baziCareerArgs).stdout,
+  );
+  const baziCareerWestern = runNode(tempSkill, [
+    'scripts/loom-chart.mjs',
+    'bazi-career',
+    '--input-file',
+    'scripts/fixtures/smoke.json',
+    '--system',
+    'western',
+    '--depth',
+    'standard',
+    '--now',
+    FIXED_NOW,
+  ]);
+  record(
+    'bazi-career rejects a non-bazi system selection (fail closed)',
+    baziCareerWestern.code !== 0 &&
+      /"code":\s*"RULESET_UNSUPPORTED"/.test(baziCareerWestern.stdout),
+  );
+  const baziCareerMissingSystem = runNode(tempSkill, [
+    'scripts/loom-chart.mjs',
+    'bazi-career',
+    '--input-file',
+    'scripts/fixtures/smoke.json',
+    '--depth',
+    'standard',
+    '--now',
+    FIXED_NOW,
+  ]);
+  record(
+    'bazi-career requires an explicit system selection',
+    baziCareerMissingSystem.code === 2 &&
+      /"code":\s*"INPUT_VALIDATION_FAILED"/.test(baziCareerMissingSystem.stdout),
+  );
+  const smokeFixture = JSON.parse(
+    readFileSync(join(srcSkill, 'scripts', 'fixtures', 'smoke.json'), 'utf8'),
+  ) as Record<string, unknown>;
+  const unknownFixture = join(tempSkill, 'scripts', 'fixtures', 'smoke-unknown-time.json');
+  writeFileSync(
+    unknownFixture,
+    JSON.stringify({ ...smokeFixture, localTime: undefined, timeAccuracy: 'unknown' }),
+  );
+  const baziCareerUnknown = runNode(tempSkill, [
+    'scripts/loom-chart.mjs',
+    'bazi-career',
+    '--input-file',
+    'scripts/fixtures/smoke-unknown-time.json',
+    '--system',
+    'bazi',
+    '--depth',
+    'standard',
+    '--now',
+    FIXED_NOW,
+  ]);
+  record(
+    'bazi-career fails closed with CLARIFICATION_REQUIRED on unknown birth time',
+    baziCareerUnknown.code === 12 &&
+      /"code":\s*"CLARIFICATION_REQUIRED"/.test(baziCareerUnknown.stdout),
+  );
+
   const targetDate = '2026-05-20';
   const dynamicAnswer = runNode(tempSkill, [
     ...answerArgs,
